@@ -34,3 +34,7 @@ Validation: `.venv/bin/pytest tests/test_access_risk -q --tb=short` — **18 pas
 Implemented deterministic R1–R5 checks with stable SHA-256-derived finding IDs, evidence records, severity/confidence, recommendations, tier metadata, and INFO-level evidence-gap notes. Peer groups below the minimum and users without a sufficient activity baseline produce explicit insufficiency notes. The rare-permission comparison remains heuristic and should be reviewed before making policy decisions.
 
 Validation: 18 focused tests pass, including positives, negatives/boundaries, log-coverage guard, peer-size guard, unusual activity, and the demo fixture. Cross-layer handling is present as a first implementation and will be further validated in its dedicated checkpoint.
+
+### Phase 4 — scoring and dry-run plan
+
+Added per-identity severity-band caps, the specified org formula and risk-grade bands, plus a dry-run executor that emits review actions and never has an execution method. T1 remains a policy marker only. Focused scoring/remediation tests: **3 passed**; combined engine/scoring tests: **13 passed**.
