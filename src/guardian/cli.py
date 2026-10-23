@@ -6649,3 +6649,78 @@ def baseline(
     console.print(f"    Avg gas: {profile.avg_gas:,.0f}  |  Std gas: {profile.std_gas:,.0f}")
     console.print(f"    Failed tx ratio: {profile.failed_tx_ratio:.2%}")
     console.print()
+
+
+@app.command(name="access-risk")
+def access_risk_command(
+    input_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    format: str = typer.Option("cli", "--format", help="Output format: cli, json, markdown, html."),
+    output: Path | None = typer.Option(None, "--output", "-o"),
+    as_of: str | None = typer.Option(None, "--as-of", help="Timezone-aware ISO-8601 reference time."),
+    policy: Path | None = typer.Option(None, "--policy", exists=True, dir_okay=False),
+    contract_report: list[Path] | None = typer.Option(None, "--contract-report", exists=True, dir_okay=False),
+    explain: str = typer.Option("template", "--explain", help="Explanation mode: none, template, bedrock."),
+    fail_on: str | None = typer.Option(None, "--fail-on", help="Exit 1 for a finding at or above this severity."),
+    remediation_plan_path: Path | None = typer.Option(None, "--remediation-plan"),
+) -> None:
+    """Review SaaS access drift and produce a human-approved dry-run plan."""
+    import json as json_module
+
+    from guardian.access_risk.engine import analyze as analyze_access
+    from guardian.access_risk.explainer import BedrockExplainer
+    from guardian.access_risk.loader import load_input as load_access
+    from guardian.access_risk.reports import (
+        explain_report,
+        projected_report,
+        render_cli,
+        render_html,
+        render_json,
+        render_markdown,
+    )
+
+    if format not in {"cli", "json", "markdown", "html"}:
+        typer.echo("Invalid access-risk format; choose cli, json, markdown, or html.", err=True)
+        raise typer.Exit(code=2)
+    if explain not in {"none", "template", "bedrock"}:
+        typer.echo("Invalid explanation mode; choose none, template, or bedrock.", err=True)
+        raise typer.Exit(code=2)
+    if fail_on and fail_on.upper() not in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}:
+        typer.echo("Invalid --fail-on severity.", err=True)
+        raise typer.Exit(code=2)
+    try:
+        data = load_access(input_path)
+        if policy:
+            import yaml
+            policy_data = json_module.loads(policy.read_text(encoding="utf-8")) if policy.suffix.lower() == ".json" else yaml.safe_load(policy.read_text(encoding="utf-8"))
+            if not isinstance(policy_data, dict):
+                raise ValueError("policy: expected an object")
+            data["policy"] = {**data.get("policy", {}), **policy_data}
+        report = analyze_access(data, as_of=as_of, contract_reports=[str(p) for p in contract_report or []])
+        if explain != "none":
+            explainer = BedrockExplainer() if explain == "bedrock" else None
+            explain_report(report, explain, explainer)
+        if remediation_plan_path:
+            remediation_plan_path.parent.mkdir(parents=True, exist_ok=True)
+            remediation_plan_path.write_text(json_module.dumps(report["remediation_plan"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        if format == "json":
+            text = render_json(report)
+        elif format == "markdown":
+            text = render_markdown(report)
+        elif format == "html":
+            text = render_html(report, projected_report(data, report))
+        else:
+            text = render_cli(report)
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(text, encoding="utf-8")
+        else:
+            typer.echo(text, nl=False)
+        if fail_on:
+            rank = {"INFO": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+            if any(rank[f["severity"]] >= rank[fail_on.upper()] for f in report["findings"]):
+                raise typer.Exit(code=1)
+    except typer.Exit:
+        raise
+    except Exception as exc:
+        typer.echo(f"access-risk: {exc}", err=True)
+        raise typer.Exit(code=2) from exc

@@ -41,6 +41,7 @@ monitor = ["web3>=6.0.0", "aiohttp>=3.9.0"]
 remediation = ["pygithub>=2.0.0"]
 # All optional features
 all = ["vyper>=0.4.0", "web3>=6.0.0", "aiohttp>=3.9.0", "pygithub>=2.0.0"]
+aws = ["boto3>=1.34.0"]
 
 [project.scripts]
 vyper-guard = "guardian.cli:app"

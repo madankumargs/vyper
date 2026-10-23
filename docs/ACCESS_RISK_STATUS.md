@@ -38,3 +38,9 @@ Validation: 18 focused tests pass, including positives, negatives/boundaries, lo
 ### Phase 4 — scoring and dry-run plan
 
 Added per-identity severity-band caps, the specified org formula and risk-grade bands, plus a dry-run executor that emits review actions and never has an execution method. T1 remains a policy marker only. Focused scoring/remediation tests: **3 passed**; combined engine/scoring tests: **13 passed**.
+
+### Phase 5 — CLI and report formats
+
+Added the `access-risk` Typer command with JSON, Markdown, HTML, and CLI renderers; fixed `--as-of`, policy overrides, repeated contract reports, severity exit thresholds, and optional dry-run plan export. Reports include run metadata, risk grade/formula inputs, identity scores, findings with evidence, plan, correlation wording, limitations, disclaimer, and a basic projected view. Added a lazy Bedrock adapter with deterministic-template fallback and the optional `aws` extra.
+
+Validation: demo CLI JSON/Markdown/HTML generation succeeded; repeat-run JSON is byte-identical; HTML has inline CSS, disclaimer and projected section, and no external URLs. Focused access-risk tests: **25 passed**; Ruff check over new package/tests and CLI: passed.
