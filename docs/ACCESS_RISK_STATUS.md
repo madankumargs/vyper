@@ -48,3 +48,9 @@ Validation: demo CLI JSON/Markdown/HTML generation succeeded; repeat-run JSON is
 ### Phase 7 — synthetic evaluation
 
 Added a separate holdout with 28 fake identities and more sparse-history rows, plus a script that reports overall/per-rule precision, recall, F1 and enumerates every FP/FN. No thresholds were changed for holdout. Results in `ACCESS_RISK_EVALUATION.md`: demo 15 TP / 0 FP / 0 FN; holdout 15 / 0 / 0; both show INFO evidence gaps (6 and 10 respectively). These are same-team synthetic fixtures and are not predictive of production accuracy.
+
+### Phase 9 — AWS artifacts (deployment not performed)
+
+Added a SAM template with private encrypted/versioned input and report buckets, optional create-time Object Lock, S3 JSON trigger, Lambda, least-privilege object/topic permissions, SNS aggregate alerts, log retention, optional Bedrock IAM, and parameters. Added the handler, a local in-memory S3/SNS invocation tool, and deployment/teardown guide. SNS contains only aggregate counts and score, not identities or evidence.
+
+Validation: `python aws/local_invoke.py examples/access_risk_demo.json` wrote three stubbed report objects and emitted one aggregate alert; `tests/test_access_risk/test_lambda.py` — **2 passed**; `cfn-lint aws/template.yaml` (cfn-lint 1.58.0) — passed. AWS deployment, IAM behavior in an account, Bedrock access, and cloud costs were not tested.
