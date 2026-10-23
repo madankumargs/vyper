@@ -28,3 +28,9 @@ Implementation results and verified commands will be appended as phases complete
 Added typed `TypedDict` schema declarations and a strict JSON loader with timezone and referential-integrity checks. Added 24-identity fake demo and separate truth file, plus a differently named/dated synthetic holdout and truth file. Added an example Vyper contract and analyzer-generated JSON report. The real report includes verified `unprotected_state_change` (HIGH) and `unprotected_selfdestruct` (CRITICAL) detector IDs; this confirms the report uses top-level `findings[]` with `detector` and `severity` fields.
 
 Validation: `.venv/bin/pytest tests/test_access_risk -q --tb=short` — **18 passed**. `vyper-guard analyze examples/access_risk_vulnerable_vault.vy --format json --output examples/access_risk_contract_report.json` — succeeded. No external services were called by tests.
+
+### Phase 3 — R1–R5 rule engine
+
+Implemented deterministic R1–R5 checks with stable SHA-256-derived finding IDs, evidence records, severity/confidence, recommendations, tier metadata, and INFO-level evidence-gap notes. Peer groups below the minimum and users without a sufficient activity baseline produce explicit insufficiency notes. The rare-permission comparison remains heuristic and should be reviewed before making policy decisions.
+
+Validation: 18 focused tests pass, including positives, negatives/boundaries, log-coverage guard, peer-size guard, unusual activity, and the demo fixture. Cross-layer handling is present as a first implementation and will be further validated in its dedicated checkpoint.
