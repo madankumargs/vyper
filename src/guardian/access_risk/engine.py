@@ -70,7 +70,7 @@ def _finding(
         "priority_score": WEIGHTS[severity],
         "priority_reasons": [],
         "insufficient_evidence": insufficient,
-        "explanation_source": "template",
+        "explanation_source": None,
     }
 
 
@@ -442,6 +442,7 @@ def analyze(
     # Correlation is deliberately best-effort; a broken report never suppresses SaaS findings.
     reports = list(contract_reports or [])
     correlation_notes = []
+    boosted_assets = set()
     for asset in data.get("assets", []):
         path = asset.get("vyper_report_path")
         if path:
@@ -506,22 +507,38 @@ def analyze(
                         asset=aid,
                     )
                 )
-                for f in findings:
-                    if f["identity_id"] == g["user_id"] and f.get("asset_id") == aid:
-                        f["priority_score"] = min(
-                            100,
-                            round(f["priority_score"] * float(policy["cross_layer_multiplier"])),
-                        )
-                        if CROSS_WORDING not in f["priority_reasons"]:
-                            f["priority_reasons"].append(CROSS_WORDING)
+                boost_key = (g["user_id"], aid)
+                if boost_key not in boosted_assets:
+                    for f in findings:
+                        if f["identity_id"] == g["user_id"] and f.get("asset_id") == aid:
+                            f["priority_score"] = min(
+                                100,
+                                round(
+                                    f["priority_score"] * float(policy["cross_layer_multiplier"])
+                                ),
+                            )
+                            if CROSS_WORDING not in f["priority_reasons"]:
+                                f["priority_reasons"].append(CROSS_WORDING)
+                    boosted_assets.add(boost_key)
     findings.sort(key=lambda f: (-f["priority_score"], -WEIGHTS[f["severity"]], f["finding_id"]))
     scores, org, grade = score_findings(findings, identities)
+    report_inputs = []
+    for report_path in sorted(set(reports)):
+        try:
+            report_hash = hashlib.sha256(Path(report_path).read_bytes()).hexdigest()
+        except OSError:
+            report_hash = None
+        report_inputs.append({"path": str(report_path), "sha256": report_hash})
+    input_material = {"snapshot": data, "contract_reports": report_inputs}
+    input_hash = hashlib.sha256(
+        json.dumps(
+            input_material, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode()
+    ).hexdigest()
     return {
         "schema_version": "vyper-guard-access-risk/v1",
         "as_of": now.isoformat().replace("+00:00", "Z"),
-        "input_sha256": hashlib.sha256(
-            json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-        ).hexdigest(),
+        "input_sha256": input_hash,
         "tool_version": "0.7.0",
         "score_label": "Access Risk Score (higher = more risk)",
         "org_score": org,

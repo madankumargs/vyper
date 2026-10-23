@@ -54,3 +54,18 @@ Added a separate holdout with 28 fake identities and more sparse-history rows, p
 Added a SAM template with private encrypted/versioned input and report buckets, optional create-time Object Lock, S3 JSON trigger, Lambda, least-privilege object/topic permissions, SNS aggregate alerts, log retention, optional Bedrock IAM, and parameters. Added the handler, a local in-memory S3/SNS invocation tool, and deployment/teardown guide. SNS contains only aggregate counts and score, not identities or evidence.
 
 Validation: `python aws/local_invoke.py examples/access_risk_demo.json` wrote three stubbed report objects and emitted one aggregate alert; `tests/test_access_risk/test_lambda.py` — **2 passed**; `cfn-lint aws/template.yaml` (cfn-lint 1.58.0) — passed. AWS deployment, IAM behavior in an account, Bedrock access, and cloud costs were not tested.
+
+### Phase 8 — explanations
+
+Template explanations are the offline default. Bedrock Converse support is implemented as an optional lazy adapter with bounded output, timeout/retry configuration, a constrained schema, and deterministic fallback. Stubbed success, invalid-schema, unknown-evidence-reference, exception, and deterministic-template tests pass; no Bedrock call was made.
+
+### Phase 10 — documentation and final verification
+
+Added architecture/rules/scoring/remediation/limitations documentation, demo script, judging map, references inventory, README commands, and this status. CSV-directory ingestion and the optional Step Functions design artifact were cut. External citations were omitted because no external standard or paper was independently opened and checked. Ruff lint, cfn-lint, and local AWS stubs passed. Full suite: **508 passed**, 60 Typer/Click deprecation warnings, Python 3.12.14; baseline was 475 passed. The final full run was performed after the loader and correlation-priority fixes. Ruff format check still reports one pre-existing formatting difference at `src/guardian/analyzer/vyper_detector.py:2192`; the new command itself was formatted. AWS deployment was not performed.
+
+## Remaining scope and risks
+
+- No CSV directory input, Step Functions artifact, or live AWS deployment.
+- Bedrock behavior was tested only against stubs; account credentials/model/guardrail configuration were not exercised.
+- Synthetic evaluation labels were authored alongside the rules and cannot estimate production precision or recall.
+- Review these assumptions before a demo: (1) snapshot providers identify grants, permissions, and event types consistently; (2) declared log coverage really spans the stated time and event types; (3) team/role groups and contract-to-deployer asset links are accurate and current.

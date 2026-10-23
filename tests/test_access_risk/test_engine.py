@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 from guardian.access_risk.engine import analyze
@@ -88,7 +89,9 @@ def test_unusual_activity_new_country_and_baseline_insufficient():
 
 def test_cross_layer_increases_priority_without_changing_severity():
     d = data()
-    before = analyze(d)
+    baseline = copy.deepcopy(d)
+    baseline["assets"][0]["vyper_report_path"] = None
+    before = analyze(baseline)
     after = analyze(d, contract_reports=[str(ROOT / "examples/access_risk_contract_report.json")])
     f = next(f for f in after["findings"] if f["rule_id"] == "cross_layer_exposure")
     base = next(
@@ -113,3 +116,50 @@ def test_invalid_contract_report_degrades_gracefully():
 def test_deterministic_output():
     d = data()
     assert analyze(d) == analyze(d)
+
+
+def test_stale_identity_boundary_45_days_is_not_flagged():
+    d = data()
+    user = next(x for x in d["identities"] if x["user_id"] == "user-02")
+    user["last_active_at"] = "2026-09-08T00:00:00Z"
+    r = analyze(d)
+    assert not any(
+        f["rule_id"] == "stale_identity" and f["identity_id"] == "user-02" for f in r["findings"]
+    )
+
+
+def test_unused_permission_exact_threshold_is_included():
+    d = data()
+    grant = next(
+        g for g in d["grants"] if g["user_id"] == "user-02" and g["permission_id"] == "p-prod"
+    )
+    grant["granted_at"] = "2026-08-24T00:00:00Z"
+    r = analyze(d)
+    assert any(
+        f["rule_id"] == "unused_permission"
+        and f["identity_id"] == "user-02"
+        and not f["insufficient_evidence"]
+        for f in r["findings"]
+    )
+
+
+def test_excessive_scope_non_sensitive_broad_permission_is_medium():
+    d = data()
+    permission = next(p for p in d["permissions"] if p["permission_id"] == "p-wild")
+    permission["sensitive"] = False
+    r = analyze(d)
+    f = next(
+        f
+        for f in r["findings"]
+        if f["rule_id"] == "excessive_scope" and f["identity_id"] == "user-04"
+    )
+    assert f["severity"] == "MEDIUM"
+
+
+def test_peer_group_exactly_at_minimum_is_compared():
+    d = data()
+    for identity in d["identities"]:
+        if identity["user_id"] in {"user-05", "user-06", "user-07", "user-08"}:
+            identity["team"] = "other"
+    r = analyze(d)
+    assert ("peer_drift", "user-03", "p-rare") not in tuples(r)

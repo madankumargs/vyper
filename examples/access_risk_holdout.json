@@ -3620,7 +3620,7 @@
       "type": "smart_contract",
       "criticality": "high",
       "owners": [
-        "user-05"
+        "hold-e"
       ],
       "vyper_report_path": "examples/access_risk_contract_report.json"
     }

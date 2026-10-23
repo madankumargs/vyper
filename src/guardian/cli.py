@@ -6656,11 +6656,19 @@ def access_risk_command(
     input_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
     format: str = typer.Option("cli", "--format", help="Output format: cli, json, markdown, html."),
     output: Path | None = typer.Option(None, "--output", "-o"),
-    as_of: str | None = typer.Option(None, "--as-of", help="Timezone-aware ISO-8601 reference time."),
+    as_of: str | None = typer.Option(
+        None, "--as-of", help="Timezone-aware ISO-8601 reference time."
+    ),
     policy: Path | None = typer.Option(None, "--policy", exists=True, dir_okay=False),
-    contract_report: list[Path] | None = typer.Option(None, "--contract-report", exists=True, dir_okay=False),
-    explain: str = typer.Option("template", "--explain", help="Explanation mode: none, template, bedrock."),
-    fail_on: str | None = typer.Option(None, "--fail-on", help="Exit 1 for a finding at or above this severity."),
+    contract_report: list[Path] | None = typer.Option(
+        None, "--contract-report", exists=True, dir_okay=False
+    ),
+    explain: str = typer.Option(
+        "template", "--explain", help="Explanation mode: none, template, bedrock."
+    ),
+    fail_on: str | None = typer.Option(
+        None, "--fail-on", help="Exit 1 for a finding at or above this severity."
+    ),
     remediation_plan_path: Path | None = typer.Option(None, "--remediation-plan"),
 ) -> None:
     """Review SaaS access drift and produce a human-approved dry-run plan."""
@@ -6691,17 +6699,27 @@ def access_risk_command(
         data = load_access(input_path)
         if policy:
             import yaml
-            policy_data = json_module.loads(policy.read_text(encoding="utf-8")) if policy.suffix.lower() == ".json" else yaml.safe_load(policy.read_text(encoding="utf-8"))
+
+            policy_data = (
+                json_module.loads(policy.read_text(encoding="utf-8"))
+                if policy.suffix.lower() == ".json"
+                else yaml.safe_load(policy.read_text(encoding="utf-8"))
+            )
             if not isinstance(policy_data, dict):
                 raise ValueError("policy: expected an object")
             data["policy"] = {**data.get("policy", {}), **policy_data}
-        report = analyze_access(data, as_of=as_of, contract_reports=[str(p) for p in contract_report or []])
+        report = analyze_access(
+            data, as_of=as_of, contract_reports=[str(p) for p in contract_report or []]
+        )
         if explain != "none":
             explainer = BedrockExplainer() if explain == "bedrock" else None
             explain_report(report, explain, explainer)
         if remediation_plan_path:
             remediation_plan_path.parent.mkdir(parents=True, exist_ok=True)
-            remediation_plan_path.write_text(json_module.dumps(report["remediation_plan"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            remediation_plan_path.write_text(
+                json_module.dumps(report["remediation_plan"], indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
         if format == "json":
             text = render_json(report)
         elif format == "markdown":
