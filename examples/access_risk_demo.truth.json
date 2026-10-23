@@ -1,0 +1,51 @@
+{
+  "expected_findings": [
+    {
+      "rule_id": "stale_identity",
+      "identity_id": "user-01",
+      "permission_id": "p-admin"
+    },
+    {
+      "rule_id": "unused_permission",
+      "identity_id": "user-02",
+      "permission_id": "p-prod"
+    },
+    {
+      "rule_id": "peer_drift",
+      "identity_id": "user-03",
+      "permission_id": "p-rare"
+    },
+    {
+      "rule_id": "unusual_activity",
+      "identity_id": "user-09",
+      "permission_id": null
+    },
+    {
+      "rule_id": "excessive_scope",
+      "identity_id": "user-04",
+      "permission_id": "p-wild"
+    },
+    {
+      "rule_id": "cross_layer_exposure",
+      "identity_id": "user-05",
+      "permission_id": "p-contract"
+    }
+  ],
+  "expected_negatives": [
+    {
+      "identity_id": "user-06",
+      "permission_id": "p-temp",
+      "reason": "approved temporary access is unexpired"
+    },
+    {
+      "identity_id": "user-07",
+      "permission_id": "p-new",
+      "reason": "recently granted; below unused threshold"
+    },
+    {
+      "identity_id": "user-08",
+      "permission_id": "p-loggap",
+      "reason": "event-type logging coverage is insufficient; expected INFO note, not unused claim"
+    }
+  ]
+}

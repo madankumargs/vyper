@@ -22,3 +22,9 @@ The verified access-control detector IDs currently include `unprotected_state_ch
 ## Results
 
 Implementation results and verified commands will be appended as phases complete. AWS deployment is not authorized or possible in this environment and will not be represented as performed.
+
+### Phase 2 — models, loader, demo inputs
+
+Added typed `TypedDict` schema declarations and a strict JSON loader with timezone and referential-integrity checks. Added 24-identity fake demo and separate truth file, plus a differently named/dated synthetic holdout and truth file. Added an example Vyper contract and analyzer-generated JSON report. The real report includes verified `unprotected_state_change` (HIGH) and `unprotected_selfdestruct` (CRITICAL) detector IDs; this confirms the report uses top-level `findings[]` with `detector` and `severity` fields.
+
+Validation: `.venv/bin/pytest tests/test_access_risk -q --tb=short` — **18 passed**. `vyper-guard analyze examples/access_risk_vulnerable_vault.vy --format json --output examples/access_risk_contract_report.json` — succeeded. No external services were called by tests.

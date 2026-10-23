@@ -1,0 +1,681 @@
+{
+  "$schema": "vyper-guard-report/v1",
+  "tool": {
+    "name": "vyper-guard",
+    "version": "0.7.0",
+    "url": "https://deepwiki.com/preethamak/vyper"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Linux 6.18.55 (x86_64)"
+  },
+  "file_path": "/workspace/vyper/examples/access_risk_vulnerable_vault.vy",
+  "timestamp": "2026-10-23T09:35:18.275499+00:00",
+  "vyper_version": "^0.3.9",
+  "security_score": 0,
+  "grade": "F",
+  "grade_label": "High detected heuristic risk",
+  "summary": {
+    "total": 12,
+    "critical": 2,
+    "high": 6,
+    "medium": 1,
+    "low": 3,
+    "info": 0
+  },
+  "findings": [
+    {
+      "detector": "missing_nonreentrant",
+      "severity": "CRITICAL",
+      "confidence": "HIGH",
+      "vulnerability_type": "reentrancy",
+      "title": "Missing @nonreentrant on withdraw()",
+      "description": "Function ``withdraw()`` is @external, performs an external call or value transfer, but does not use the @nonreentrant decorator. This exposes the contract to reentrancy attacks.",
+      "line_number": 19,
+      "end_line_number": 23,
+      "source_snippet": "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+      "fix_suggestion": "Add ``@nonreentrant`` before the ``@external`` decorator on ``withdraw()``.",
+      "why_flagged": "Function ``withdraw()`` is @external, performs an external call or value transfer, but does not use the @nonreentrant decorator. This exposes the contract to reentrancy attacks.",
+      "evidence": [
+        "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+        "line:19"
+      ],
+      "semantic_context": {
+        "function": "withdraw",
+        "state_reads": [],
+        "state_writes": [
+          "balances"
+        ],
+        "external_calls": 1,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "b8a7b444414cc66b88ce5f0f4fdbd6f347c2ae60baccd664d072a8ba6494a887"
+    },
+    {
+      "detector": "missing_nonreentrant",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "reentrancy",
+      "title": "Missing @nonreentrant on deposit()",
+      "description": "Function ``deposit()`` is @external and modifies state without the @nonreentrant decorator. This can be exploited via cross-function reentrancy if another function in the contract makes external calls.",
+      "line_number": 26,
+      "end_line_number": 30,
+      "source_snippet": "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+      "fix_suggestion": "Add ``@nonreentrant`` before the ``@external`` decorator on ``deposit()``.",
+      "why_flagged": "Function ``deposit()`` is @external and modifies state without the @nonreentrant decorator. This can be exploited via cross-function reentrancy if another function in the contract makes external calls.",
+      "evidence": [
+        "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+        "line:26"
+      ],
+      "semantic_context": {
+        "function": "deposit",
+        "state_reads": [],
+        "state_writes": [
+          "balances",
+          "total_deposited"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "a4a7ce73f44a2a2ac18aa727c60a15318f6c9789b28f570e6399d5bb24663871"
+    },
+    {
+      "detector": "missing_nonreentrant",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "reentrancy",
+      "title": "Missing @nonreentrant on set_owner()",
+      "description": "Function ``set_owner()`` is @external and modifies state without the @nonreentrant decorator. This can be exploited via cross-function reentrancy if another function in the contract makes external calls.",
+      "line_number": 38,
+      "end_line_number": 40,
+      "source_snippet": "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+      "fix_suggestion": "Add ``@nonreentrant`` before the ``@external`` decorator on ``set_owner()``.",
+      "why_flagged": "Function ``set_owner()`` is @external and modifies state without the @nonreentrant decorator. This can be exploited via cross-function reentrancy if another function in the contract makes external calls.",
+      "evidence": [
+        "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+        "line:38"
+      ],
+      "semantic_context": {
+        "function": "set_owner",
+        "state_reads": [],
+        "state_writes": [
+          "owner"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "ec9207a1be10d2f39502f62857a8b636b4d630da45e96e6b1a4f75f90c4eccc5"
+    },
+    {
+      "detector": "unsafe_raw_call",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "external_call",
+      "title": "Unchecked raw_call in execute()",
+      "description": "``raw_call()`` in ``execute()`` does not have its return value asserted. If the external call fails silently, state may become inconsistent.",
+      "line_number": 35,
+      "end_line_number": null,
+      "source_snippet": "raw_call(target, data)",
+      "fix_suggestion": "Wrap the call: ``assert raw_call(...)``, or capture the success flag and assert it.",
+      "why_flagged": "``raw_call()`` in ``execute()`` does not have its return value asserted. If the external call fails silently, state may become inconsistent.",
+      "evidence": [
+        "raw_call(target, data)",
+        "line:35"
+      ],
+      "semantic_context": {
+        "function": "execute",
+        "state_reads": [],
+        "state_writes": [],
+        "external_calls": 1,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "5330f0265621d70dc9bab106c9d683608754f1392dfa450d7c1ffa4608ebbc99"
+    },
+    {
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "vulnerability_type": "code_quality",
+      "title": "No event emitted in withdraw()",
+      "description": "Function ``withdraw()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "line_number": 19,
+      "end_line_number": null,
+      "source_snippet": "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+      "fix_suggestion": "Add a ``log`` statement at the end of ``withdraw()``.",
+      "why_flagged": "Function ``withdraw()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "evidence": [
+        "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+        "line:19"
+      ],
+      "semantic_context": {
+        "function": "withdraw",
+        "state_reads": [],
+        "state_writes": [
+          "balances"
+        ],
+        "external_calls": 1,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "ce77c0fb9df69d40d48a74d381ef944d0b63fa4eb2208a61c77fc4b557c8097d"
+    },
+    {
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "vulnerability_type": "code_quality",
+      "title": "No event emitted in deposit()",
+      "description": "Function ``deposit()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "line_number": 26,
+      "end_line_number": null,
+      "source_snippet": "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+      "fix_suggestion": "Add a ``log`` statement at the end of ``deposit()``.",
+      "why_flagged": "Function ``deposit()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "evidence": [
+        "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+        "line:26"
+      ],
+      "semantic_context": {
+        "function": "deposit",
+        "state_reads": [],
+        "state_writes": [
+          "balances",
+          "total_deposited"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "c0f5d3a138e8ca558c1d23cc25283164f1ec838aa88f569904301ab125629fb7"
+    },
+    {
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "vulnerability_type": "code_quality",
+      "title": "No event emitted in set_owner()",
+      "description": "Function ``set_owner()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "line_number": 38,
+      "end_line_number": null,
+      "source_snippet": "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+      "fix_suggestion": "Add a ``log`` statement at the end of ``set_owner()``.",
+      "why_flagged": "Function ``set_owner()`` modifies contract state but does not emit an event (``log``).  Events are essential for off-chain indexers and transparency.",
+      "evidence": [
+        "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+        "line:38"
+      ],
+      "semantic_context": {
+        "function": "set_owner",
+        "state_reads": [],
+        "state_writes": [
+          "owner"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "d33cb5a93326ae6bd96b5b0f3b28717be1a060a13349790e55d93a0b8219b6fa"
+    },
+    {
+      "detector": "unprotected_selfdestruct",
+      "severity": "CRITICAL",
+      "confidence": "HIGH",
+      "vulnerability_type": "self_destruct",
+      "title": "Unprotected selfdestruct in destroy()",
+      "description": "``selfdestruct()`` in ``destroy()`` can be called by anyone — no ``msg.sender`` check was found. An attacker can destroy the contract.",
+      "line_number": 43,
+      "end_line_number": null,
+      "source_snippet": "@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external\n@view\ndef get_balance(addr: address) -> uint256:\n    return self.balances[addr]",
+      "fix_suggestion": "Add ``assert msg.sender == self.owner`` (or equivalent) before the ``selfdestruct()`` call.",
+      "why_flagged": "``selfdestruct()`` in ``destroy()`` can be called by anyone — no ``msg.sender`` check was found. An attacker can destroy the contract.",
+      "evidence": [
+        "@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external\n@view\ndef get_balance(addr: address) -> uint256:\n    return self.balances[addr]",
+        "line:43"
+      ],
+      "semantic_context": {
+        "function": "destroy",
+        "state_reads": [
+          "owner"
+        ],
+        "state_writes": [],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "a3c76c6a37b2f38a97cb7fd610411d8fae3e22d495a71f9da103dec5d2fb7b0a"
+    },
+    {
+      "detector": "unprotected_state_change",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "access_control",
+      "title": "Unprotected write to self.total_deposited in deposit()",
+      "description": "``deposit()`` writes to ``self.total_deposited`` without checking ``msg.sender``. Anyone can call this function and change a sensitive state variable.",
+      "line_number": 26,
+      "end_line_number": null,
+      "source_snippet": "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+      "fix_suggestion": "Add ``assert msg.sender == self.owner`` (or equivalent) at the top of ``deposit()``.",
+      "why_flagged": "``deposit()`` writes to ``self.total_deposited`` without checking ``msg.sender``. Anyone can call this function and change a sensitive state variable.",
+      "evidence": [
+        "@external\n@payable\ndef deposit():\n    self.balances[msg.sender] += msg.value\n    self.total_deposited += msg.value\n\n# VULNERABILITY: raw_call without assert\n@external\ndef execute(target: address, data: Bytes[1024]):\n    raw_call(target, data)",
+        "line:26"
+      ],
+      "semantic_context": {
+        "function": "deposit",
+        "state_reads": [],
+        "state_writes": [
+          "balances",
+          "total_deposited"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "3ae1bd3ba205018dd6c511859c54cc1595ab98f23081069714ecd2cf8208a313"
+    },
+    {
+      "detector": "unprotected_state_change",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "access_control",
+      "title": "Unprotected write to self.owner in set_owner()",
+      "description": "``set_owner()`` writes to ``self.owner`` without checking ``msg.sender``. Anyone can call this function and change a sensitive state variable.",
+      "line_number": 38,
+      "end_line_number": null,
+      "source_snippet": "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+      "fix_suggestion": "Add ``assert msg.sender == self.owner`` (or equivalent) at the top of ``set_owner()``.",
+      "why_flagged": "``set_owner()`` writes to ``self.owner`` without checking ``msg.sender``. Anyone can call this function and change a sensitive state variable.",
+      "evidence": [
+        "@external\ndef set_owner(new_owner: address):\n    self.owner = new_owner\n\n# VULNERABILITY: selfdestruct with NO access control\n@external\ndef destroy():\n    selfdestruct(self.owner)\n\n@external",
+        "line:38"
+      ],
+      "semantic_context": {
+        "function": "set_owner",
+        "state_reads": [],
+        "state_writes": [
+          "owner"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "eed913ca09ce363736dd98dde41ef9d3d55a2a44e21d99ee8efcab9cb5f97109"
+    },
+    {
+      "detector": "cei_violation",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "vulnerability_type": "reentrancy",
+      "title": "CEI violation in withdraw()",
+      "description": "``withdraw()`` performs an external call (``send``) **before** updating state on a reachable execution path. Callback feasibility is ``attacker_controlled``; target trust is ``caller_controlled``; state dependencies are ``balances``. Move all state changes above the external call (Checks → Effects → Interactions).",
+      "line_number": 22,
+      "end_line_number": null,
+      "source_snippet": "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+      "fix_suggestion": "Reorder the function: perform all state updates (self.x = …) BEFORE any external calls (send / raw_call / interface calls). This is the Checks-Effects-Interactions pattern.",
+      "why_flagged": "A reachable path performs an external call before state mutation.",
+      "evidence": [
+        "call_line=22",
+        "reachable_write_lines=23",
+        "callback_feasibility=attacker_controlled",
+        "call_mutability=nonpayable",
+        "target_trust=caller_controlled",
+        "access_controlled=False",
+        "state_dependencies=balances",
+        "@external\ndef withdraw(amount: uint256):\n    assert self.balances[msg.sender] >= amount, \"Insufficient balance\"\n    send(msg.sender, amount)\n    self.balances[msg.sender] -= amount\n\n# VULNERABILITY: state change without event emission\n@external\n@payable\ndef deposit():",
+        "line:22"
+      ],
+      "why_not_suppressed": "The call and later state write occur on the same reachable path.",
+      "semantic_context": {
+        "function": "withdraw",
+        "state_reads": [],
+        "state_writes": [
+          "balances"
+        ],
+        "external_calls": 1,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "exploit_verification": {
+        "version": "exploit_verification_v2",
+        "vulnerability_class": "cei_reentrancy",
+        "status": "reachable",
+        "evidence_levels": {
+          "pattern_match": true,
+          "reachable": true,
+          "reproduced": false,
+          "refuted": false
+        },
+        "confidence": "high",
+        "deterministic": true,
+        "guardrails": {
+          "executes_exploit": false,
+          "requires_human_review": true,
+          "llm_required": false
+        },
+        "function": "withdraw",
+        "attacker_control": [
+          "msg.sender",
+          "amount"
+        ],
+        "protocol_context": "vault withdrawal/accounting",
+        "path": [
+          {
+            "step": "entrypoint",
+            "line": 19,
+            "evidence": "withdraw(amount: uint256)"
+          },
+          {
+            "step": "external_interaction",
+            "line": 22,
+            "evidence": "send(msg.sender, amount)"
+          },
+          {
+            "step": "state_commit_after_interaction",
+            "line": 23,
+            "evidence": "self.balances[msg.sender] -= amount"
+          }
+        ],
+        "why_exploitable": "The function performs an external interaction before committing state. If the callee can re-enter this entrypoint or another state-dependent entrypoint, it may observe stale accounting.",
+        "patch": {
+          "strategy": "checks_effects_interactions",
+          "summary": "Move state writes before the external call and keep/ add @nonreentrant.",
+          "risk_tier": "C"
+        },
+        "regression_test": {
+          "name": "test_withdraw_cei_reentrancy_path",
+          "framework": "pytest+titanoboa",
+          "status": "skeleton",
+          "plan": [
+            "deploy vulnerable contract and attacker callback contract",
+            "fund the victim state needed by withdraw()",
+            "call withdraw() from the attacker contract",
+            "assert the attacker cannot withdraw/receive more than its committed balance after the patch"
+          ]
+        },
+        "finding_fingerprint_inputs": {
+          "detector": "cei_violation",
+          "line": 22,
+          "title": "CEI violation in withdraw()"
+        }
+      },
+      "fingerprint": "187f18a437891af1e36d943b8ae4b9478b8cbc67a6bea22fb1b8f7a0f7186792"
+    },
+    {
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "vulnerability_type": "input_validation",
+      "title": "Missing zero-address check for self.owner in set_owner()",
+      "description": "``set_owner()`` sets ``self.owner`` (an address) from ``new_owner`` without verifying it is non-zero. Setting it to ``empty(address)`` can permanently lose critical functionality (ownership, fee recipient, etc.).",
+      "line_number": 40,
+      "end_line_number": null,
+      "source_snippet": "self.owner = new_owner",
+      "fix_suggestion": "Add ``assert new_owner != empty(address)`` before assigning to ``self.owner``.",
+      "why_flagged": "``set_owner()`` sets ``self.owner`` (an address) from ``new_owner`` without verifying it is non-zero. Setting it to ``empty(address)`` can permanently lose critical functionality (ownership, fee recipient, etc.).",
+      "evidence": [
+        "self.owner = new_owner",
+        "line:40"
+      ],
+      "semantic_context": {
+        "function": "set_owner",
+        "state_reads": [],
+        "state_writes": [
+          "owner"
+        ],
+        "external_calls": 0,
+        "external_calls_in_loop": false,
+        "emits_event": false,
+        "uses_delegatecall": false
+      },
+      "fingerprint": "e68c6ac52b6d4f6b9ea5e913d6cb47d84e4ae41046024a880b5067c328ed5c71"
+    }
+  ],
+  "detectors_run": [
+    "compiler_version_check",
+    "missing_nonreentrant",
+    "unsafe_raw_call",
+    "unchecked_send",
+    "missing_event_emission",
+    "timestamp_dependence",
+    "integer_overflow",
+    "unprotected_selfdestruct",
+    "dangerous_delegatecall",
+    "unprotected_state_change",
+    "send_in_loop",
+    "unchecked_subtraction",
+    "cei_violation",
+    "tx_origin_auth",
+    "missing_zero_address_check",
+    "weak_randomness",
+    "locked_ether",
+    "shadowed_state_variable",
+    "missing_input_validation",
+    "unsafe_assembly",
+    "missing_return_value",
+    "division_before_multiplication",
+    "incorrect_erc20_return",
+    "oracle_price_manipulation",
+    "missing_slippage_protection",
+    "signature_replay"
+  ],
+  "analysis_context": {
+    "semantic_mode": "source",
+    "semantic_engine": "source",
+    "semantic_compiler_version": null,
+    "semantic_fallback_reason": null,
+    "complexity_metrics": {
+      "contract_name": "access_risk_vulnerable_vault",
+      "max_complexity": 1,
+      "mean_complexity": 1.0,
+      "functions": [
+        {
+          "name": "__init__",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 14,
+          "end_line": 16
+        },
+        {
+          "name": "withdraw",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 19,
+          "end_line": 23
+        },
+        {
+          "name": "deposit",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 26,
+          "end_line": 30
+        },
+        {
+          "name": "execute",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 33,
+          "end_line": 35
+        },
+        {
+          "name": "set_owner",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 38,
+          "end_line": 40
+        },
+        {
+          "name": "destroy",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 43,
+          "end_line": 45
+        },
+        {
+          "name": "get_balance",
+          "complexity": 1,
+          "risk_level": "LOW",
+          "start_line": 47,
+          "end_line": 50
+        }
+      ]
+    },
+    "score_kind": "heuristic_risk_indicator",
+    "analysis_trust": {
+      "level": "low",
+      "compiler_backed": false,
+      "detector_maturity": {
+        "supported": 1,
+        "beta": 6,
+        "experimental": 18
+      },
+      "degradation_reasons": [
+        "Compiler AST semantics were unavailable; source heuristics were used.",
+        "18 experimental detector(s) contributed coverage."
+      ],
+      "limitations": [
+        "A low risk indicator does not prove absence of vulnerabilities.",
+        "Economic invariants and multi-transaction protocol behavior require review.",
+        "Unreviewed detector output is not an independent security label."
+      ]
+    },
+    "triage_summary": {
+      "raw_findings": 12,
+      "grouped_detectors": {
+        "cei_violation": 1,
+        "missing_event_emission": 3,
+        "missing_nonreentrant": 3,
+        "missing_zero_address_check": 1,
+        "unprotected_selfdestruct": 1,
+        "unprotected_state_change": 2,
+        "unsafe_raw_call": 1
+      },
+      "candidates_shown": 12,
+      "candidates": [
+        {
+          "detector": "missing_nonreentrant",
+          "severity": "CRITICAL",
+          "confidence": "HIGH",
+          "title": "Missing @nonreentrant on withdraw()",
+          "line": 19,
+          "classification": "new_candidate",
+          "occurrences": 3
+        },
+        {
+          "detector": "unprotected_selfdestruct",
+          "severity": "CRITICAL",
+          "confidence": "HIGH",
+          "title": "Unprotected selfdestruct in destroy()",
+          "line": 43,
+          "classification": "new_candidate",
+          "occurrences": 1
+        },
+        {
+          "detector": "cei_violation",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "CEI violation in withdraw()",
+          "line": 22,
+          "classification": "new_candidate",
+          "occurrences": 1
+        },
+        {
+          "detector": "missing_nonreentrant",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "Missing @nonreentrant on deposit()",
+          "line": 26,
+          "classification": "new_candidate",
+          "occurrences": 3
+        },
+        {
+          "detector": "missing_nonreentrant",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "Missing @nonreentrant on set_owner()",
+          "line": 38,
+          "classification": "new_candidate",
+          "occurrences": 3
+        },
+        {
+          "detector": "unprotected_state_change",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "Unprotected write to self.total_deposited in deposit()",
+          "line": 26,
+          "classification": "new_candidate",
+          "occurrences": 2
+        },
+        {
+          "detector": "unprotected_state_change",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "Unprotected write to self.owner in set_owner()",
+          "line": 38,
+          "classification": "new_candidate",
+          "occurrences": 2
+        },
+        {
+          "detector": "unsafe_raw_call",
+          "severity": "HIGH",
+          "confidence": "HIGH",
+          "title": "Unchecked raw_call in execute()",
+          "line": 35,
+          "classification": "new_candidate",
+          "occurrences": 1
+        },
+        {
+          "detector": "missing_zero_address_check",
+          "severity": "MEDIUM",
+          "confidence": "HIGH",
+          "title": "Missing zero-address check for self.owner in set_owner()",
+          "line": 40,
+          "classification": "new_candidate",
+          "occurrences": 1
+        },
+        {
+          "detector": "missing_event_emission",
+          "severity": "LOW",
+          "confidence": "HIGH",
+          "title": "No event emitted in withdraw()",
+          "line": 19,
+          "classification": "new_candidate",
+          "occurrences": 3
+        },
+        {
+          "detector": "missing_event_emission",
+          "severity": "LOW",
+          "confidence": "HIGH",
+          "title": "No event emitted in deposit()",
+          "line": 26,
+          "classification": "new_candidate",
+          "occurrences": 3
+        },
+        {
+          "detector": "missing_event_emission",
+          "severity": "LOW",
+          "confidence": "HIGH",
+          "title": "No event emitted in set_owner()",
+          "line": 38,
+          "classification": "new_candidate",
+          "occurrences": 3
+        }
+      ],
+      "omitted_repetitions": 0
+    }
+  }
+}
