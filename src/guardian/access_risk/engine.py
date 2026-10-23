@@ -441,6 +441,7 @@ def analyze(
             )
     # Correlation is deliberately best-effort; a broken report never suppresses SaaS findings.
     reports = list(contract_reports or [])
+    correlation_notes = []
     for asset in data.get("assets", []):
         path = asset.get("vyper_report_path")
         if path:
@@ -452,19 +453,8 @@ def analyze(
             if not isinstance(rows, list):
                 raise ValueError("findings is not a list")
         except Exception as exc:
-            findings.append(
-                _finding(
-                    "cross_layer_exposure",
-                    "system",
-                    None,
-                    "INFO",
-                    "Contract report unavailable",
-                    [ev("report_issue", path=str(report_path), reason=str(exc))],
-                    "Check the report path and schema; SaaS results remain independent.",
-                    confidence=0.2,
-                    tier="T3",
-                    insufficient=True,
-                )
+            correlation_notes.append(
+                {"type": "report_issue", "path": str(report_path), "reason": str(exc)[:300]}
             )
             continue
         contract_hits = [
@@ -540,6 +530,7 @@ def analyze(
         "findings": findings,
         "remediation_plan": remediation_plan(findings),
         "cross_layer_note": CROSS_WORDING,
+        "correlation_notes": correlation_notes,
         "limitations": [
             "Analysis depends on completeness and accuracy of supplied identities, grants, events, and log coverage.",
             "Rules indicate review priorities; they do not establish intent, misconduct, or exploitability.",

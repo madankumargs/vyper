@@ -64,6 +64,12 @@ def render_markdown(report):
         "",
         "## Cross-layer correlation",
         report["cross_layer_note"],
+    ]
+    lines += [
+        f"- Correlation note: {n['reason']} ({n['path']})"
+        for n in report.get("correlation_notes", [])
+    ]
+    lines += [
         "",
         "## Remediation plan (dry-run only)",
     ]
@@ -120,7 +126,12 @@ def render_html(report, projected=None):
         )
         + "</ul></section><section><h2>Cross-layer correlation</h2><p>"
         + esc(report["cross_layer_note"])
-        + "</p></section><h2>Findings</h2>"
+        + "</p>"
+        + "".join(
+            f"<p>Correlation note: {esc(n['reason'])} ({esc(n['path'])})</p>"
+            for n in report.get("correlation_notes", [])
+        )
+        + "</section><h2>Findings</h2>"
         + "".join(cards)
         + after
         + "<section><h2>Dry-run remediation plan</h2><pre>"
