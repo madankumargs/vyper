@@ -44,3 +44,7 @@ Added per-identity severity-band caps, the specified org formula and risk-grade 
 Added the `access-risk` Typer command with JSON, Markdown, HTML, and CLI renderers; fixed `--as-of`, policy overrides, repeated contract reports, severity exit thresholds, and optional dry-run plan export. Reports include run metadata, risk grade/formula inputs, identity scores, findings with evidence, plan, correlation wording, limitations, disclaimer, and a basic projected view. Added a lazy Bedrock adapter with deterministic-template fallback and the optional `aws` extra.
 
 Validation: demo CLI JSON/Markdown/HTML generation succeeded; repeat-run JSON is byte-identical; HTML has inline CSS, disclaimer and projected section, and no external URLs. Focused access-risk tests: **25 passed**; Ruff check over new package/tests and CLI: passed.
+
+### Phase 7 — synthetic evaluation
+
+Added a separate holdout with 28 fake identities and more sparse-history rows, plus a script that reports overall/per-rule precision, recall, F1 and enumerates every FP/FN. No thresholds were changed for holdout. Results in `ACCESS_RISK_EVALUATION.md`: demo 15 TP / 0 FP / 0 FN; holdout 15 / 0 / 0; both show INFO evidence gaps (6 and 10 respectively). These are same-team synthetic fixtures and are not predictive of production accuracy.

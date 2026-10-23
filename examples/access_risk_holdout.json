@@ -361,6 +361,66 @@
       "usual_applications": [
         "codehost"
       ]
+    },
+    {
+      "user_id": "hold-x1",
+      "email": "watch1@example.com",
+      "team": "support",
+      "role": "auditor",
+      "status": "active",
+      "manager": "lead@example.com",
+      "last_active_at": "2026-10-29T00:00:00Z",
+      "usual_countries": [
+        "US"
+      ],
+      "usual_applications": [
+        "ticketing"
+      ]
+    },
+    {
+      "user_id": "hold-x2",
+      "email": "watch2@example.com",
+      "team": "support",
+      "role": "auditor",
+      "status": "active",
+      "manager": "lead@example.com",
+      "last_active_at": "2026-10-29T00:00:00Z",
+      "usual_countries": [
+        "US"
+      ],
+      "usual_applications": [
+        "ticketing"
+      ]
+    },
+    {
+      "user_id": "hold-x3",
+      "email": "watch3@example.com",
+      "team": "support",
+      "role": "auditor",
+      "status": "active",
+      "manager": "lead@example.com",
+      "last_active_at": "2026-10-29T00:00:00Z",
+      "usual_countries": [
+        "US"
+      ],
+      "usual_applications": [
+        "ticketing"
+      ]
+    },
+    {
+      "user_id": "hold-x4",
+      "email": "watch4@example.com",
+      "team": "support",
+      "role": "auditor",
+      "status": "active",
+      "manager": "lead@example.com",
+      "last_active_at": "2026-10-29T00:00:00Z",
+      "usual_countries": [
+        "US"
+      ],
+      "usual_applications": [
+        "ticketing"
+      ]
     }
   ],
   "permissions": [
@@ -455,8 +515,8 @@
       "name": "Audit export",
       "action": "export",
       "resource": "audit",
-      "risk_level": "high",
-      "sensitive": true,
+      "risk_level": "low",
+      "sensitive": false,
       "external_sharing": false,
       "event_type": "export_audit",
       "capability": "none"
@@ -3440,6 +3500,116 @@
       "timestamp": "2026-10-29T12:00:00Z",
       "country": "ZZ",
       "ip": "198.51.100.24",
+      "success": true
+    },
+    {
+      "event_id": "noise-1-1",
+      "user_id": "hold-x1",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/0",
+      "timestamp": "2026-10-20T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.1",
+      "success": true
+    },
+    {
+      "event_id": "noise-2-1",
+      "user_id": "hold-x2",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/0",
+      "timestamp": "2026-10-20T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.2",
+      "success": true
+    },
+    {
+      "event_id": "noise-2-2",
+      "user_id": "hold-x2",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/1",
+      "timestamp": "2026-10-21T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.2",
+      "success": true
+    },
+    {
+      "event_id": "noise-3-1",
+      "user_id": "hold-x3",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/0",
+      "timestamp": "2026-10-20T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.3",
+      "success": true
+    },
+    {
+      "event_id": "noise-3-2",
+      "user_id": "hold-x3",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/1",
+      "timestamp": "2026-10-21T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.3",
+      "success": true
+    },
+    {
+      "event_id": "noise-3-3",
+      "user_id": "hold-x3",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/2",
+      "timestamp": "2026-10-22T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.3",
+      "success": true
+    },
+    {
+      "event_id": "noise-4-1",
+      "user_id": "hold-x4",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/0",
+      "timestamp": "2026-10-20T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.4",
+      "success": true
+    },
+    {
+      "event_id": "noise-4-2",
+      "user_id": "hold-x4",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/1",
+      "timestamp": "2026-10-21T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.4",
+      "success": true
+    },
+    {
+      "event_id": "noise-4-3",
+      "user_id": "hold-x4",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/2",
+      "timestamp": "2026-10-22T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.4",
+      "success": true
+    },
+    {
+      "event_id": "noise-4-4",
+      "user_id": "hold-x4",
+      "application": "ticketing",
+      "action": "read",
+      "resource": "queue/3",
+      "timestamp": "2026-10-23T10:00:00Z",
+      "country": "US",
+      "ip": "203.0.113.4",
       "success": true
     }
   ],

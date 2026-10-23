@@ -29,6 +29,51 @@
       "rule_id": "cross_layer_exposure",
       "identity_id": "user-05",
       "permission_id": "p-contract"
+    },
+    {
+      "rule_id": "excessive_scope",
+      "identity_id": "user-01",
+      "permission_id": "p-admin"
+    },
+    {
+      "rule_id": "excessive_scope",
+      "identity_id": "user-02",
+      "permission_id": "p-prod"
+    },
+    {
+      "rule_id": "excessive_scope",
+      "identity_id": "user-03",
+      "permission_id": "p-rare"
+    },
+    {
+      "rule_id": "peer_drift",
+      "identity_id": "user-01",
+      "permission_id": "p-admin"
+    },
+    {
+      "rule_id": "peer_drift",
+      "identity_id": "user-02",
+      "permission_id": "p-prod"
+    },
+    {
+      "rule_id": "peer_drift",
+      "identity_id": "user-04",
+      "permission_id": "p-wild"
+    },
+    {
+      "rule_id": "peer_drift",
+      "identity_id": "user-05",
+      "permission_id": "p-contract"
+    },
+    {
+      "rule_id": "stale_identity",
+      "identity_id": "user-02",
+      "permission_id": "p-prod"
+    },
+    {
+      "rule_id": "unused_permission",
+      "identity_id": "user-01",
+      "permission_id": "p-admin"
     }
   ],
   "expected_negatives": [

@@ -455,8 +455,8 @@
       "name": "Audit export",
       "action": "export",
       "resource": "audit",
-      "risk_level": "high",
-      "sensitive": true,
+      "risk_level": "low",
+      "sensitive": false,
       "external_sharing": false,
       "event_type": "export_audit",
       "capability": "none"
