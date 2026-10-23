@@ -34,3 +34,5 @@ aws cloudformation delete-stack --stack-name STACK_NAME --region REGION
 ## Validation status
 
 This deployment was not performed. AWS credentials, account permissions, Bedrock access, and a target region were not available for validation. The handler is exercised locally with in-memory S3 and SNS stubs. `cfn-lint` validation status is recorded in `ACCESS_RISK_STATUS.md`.
+
+`state_machine.asl.json` is an optional design artifact only. It contains a callback-token approval wait and a terminal decision-recording no-op; the placeholder approval Lambda ARN must be replaced by an operator-owned integration. It is not deployed or included in the SAM stack and does not perform revocation.

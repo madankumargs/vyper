@@ -6,6 +6,8 @@ Vyper Guard Access Risk is an offline-first rules engine for reviewing SaaS iden
 
 `guardian.access_risk` contains typed provider-neutral schema declarations, JSON validation, deterministic rules, capped risk scoring, dry-run planning, explanation adapters, and report rendering. The CLI is registered as `vyper-guard access-risk` in the existing Typer application. A JSON snapshot has `as_of`, optional `policy`, and arrays for `identities`, `permissions`, `grants`, `events`, `assets`, and `log_coverage`. Timestamps must be timezone-aware ISO-8601 values. Grant and event references are checked. See `examples/access_risk_demo.json` for a complete fixture.
 
+The CLI also accepts a directory containing `metadata.json` (`as_of` and optional `policy`) and one CSV per entity (`identities.csv`, `permissions.csv`, `grants.csv`, `events.csv`, `assets.csv`, `log_coverage.csv`). Missing entity CSVs are treated as empty collections. CSV array fields use JSON array cells (for example, `["US","CA"]`); booleans must be `true` or `false`; blank nullable fields are empty cells. Both input forms pass through the same validation and referential-integrity checks.
+
 The input hash is SHA-256 over canonicalized parsed JSON plus the names and SHA-256 digests of linked contract-report files (unavailable reports are represented with a null digest). Finding IDs are stable hashes of rule, identity, and permission IDs; timestamps are excluded. Findings sort by priority and then severity and ID. A supplied fixed `--as-of` makes output reproducible.
 
 ## Rules

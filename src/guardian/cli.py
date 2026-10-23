@@ -6653,7 +6653,7 @@ def baseline(
 
 @app.command(name="access-risk")
 def access_risk_command(
-    input_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    input_path: Path = typer.Argument(..., exists=True, dir_okay=True, readable=True),
     format: str = typer.Option("cli", "--format", help="Output format: cli, json, markdown, html."),
     output: Path | None = typer.Option(None, "--output", "-o"),
     as_of: str | None = typer.Option(

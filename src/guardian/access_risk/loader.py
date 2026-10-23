@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 from datetime import datetime
 from pathlib import Path
@@ -219,8 +220,76 @@ def validate_input(data: Any) -> dict[str, Any]:
 
 
 def load_input(path: str | Path) -> dict[str, Any]:
+    """Load a JSON snapshot or a directory of entity CSVs.
+
+    CSV directories use ``metadata.json`` for ``as_of`` and optional ``policy``;
+    each entity is represented by a same-named CSV file. Array values are JSON
+    encoded in a cell, and nullable values may be blank.
+    """
+    source = Path(path)
+    if source.is_dir():
+        return validate_input(_load_csv_directory(source))
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        data = json.loads(source.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"cannot read input {path}: {exc}") from exc
     return validate_input(data)
+
+
+def _load_csv_directory(directory: Path) -> dict[str, Any]:
+    metadata_path = directory / "metadata.json"
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot read CSV metadata {metadata_path}: {exc}") from exc
+    if not isinstance(metadata, dict) or "as_of" not in metadata:
+        raise ValueError("metadata.json: expected an object containing as_of")
+
+    arrays = {"usual_countries", "usual_applications", "owners", "event_types"}
+    booleans = {"sensitive", "external_sharing", "success"}
+    nullable = {
+        "last_active_at",
+        "expires_at",
+        "controls_asset_id",
+        "vyper_report_path",
+        "permission_id",
+    }
+    data = {"as_of": metadata["as_of"], "policy": metadata.get("policy", {})}
+    for entity in ENTITIES:
+        csv_path = directory / f"{entity}.csv"
+        if not csv_path.exists():
+            data[entity] = []
+            continue
+        try:
+            with csv_path.open(encoding="utf-8-sig", newline="") as handle:
+                reader = csv.DictReader(handle)
+                if reader.fieldnames is None:
+                    raise ValueError(f"{csv_path}: missing CSV header")
+                rows = []
+                for row_number, row in enumerate(reader, start=2):
+                    record = {}
+                    for field, value in row.items():
+                        if value is None:
+                            continue
+                        value = value.strip()
+                        if value == "" and field in nullable:
+                            record[field] = None
+                        elif field in arrays and value:
+                            try:
+                                decoded = json.loads(value)
+                            except json.JSONDecodeError as exc:
+                                raise ValueError(f"{csv_path}:{row_number} {field}: expected JSON array") from exc
+                            if not isinstance(decoded, list):
+                                raise ValueError(f"{csv_path}:{row_number} {field}: expected JSON array")
+                            record[field] = decoded
+                        elif field in booleans:
+                            if value.lower() not in {"true", "false"}:
+                                raise ValueError(f"{csv_path}:{row_number} {field}: expected true or false")
+                            record[field] = value.lower() == "true"
+                        elif value != "":
+                            record[field] = value
+                    rows.append(record)
+                data[entity] = rows
+        except OSError as exc:
+            raise ValueError(f"cannot read CSV entity {csv_path}: {exc}") from exc
+    return data

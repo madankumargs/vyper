@@ -65,7 +65,13 @@ Added architecture/rules/scoring/remediation/limitations documentation, demo scr
 
 ## Remaining scope and risks
 
-- No CSV directory input, Step Functions artifact, or live AWS deployment.
+- Live AWS deployment remains unperformed. The Step Functions ASL is a design artifact and has not been validated or deployed; its callback Lambda ARN is intentionally a placeholder.
 - Bedrock behavior was tested only against stubs; account credentials/model/guardrail configuration were not exercised.
 - Synthetic evaluation labels were authored alongside the rules and cannot estimate production precision or recall.
 - Review these assumptions before a demo: (1) snapshot providers identify grants, permissions, and event types consistently; (2) declared log coverage really spans the stated time and event types; (3) team/role groups and contract-to-deployer asset links are accurate and current.
+
+### Follow-up — remaining locally addressable scope
+
+Added CSV-directory input: `metadata.json` provides `as_of` and optional `policy`; each entity can be supplied as a same-named CSV, with JSON-encoded arrays and strict boolean parsing. CSV and JSON inputs use the same validation path. Added `aws/state_machine.asl.json` as an explicitly undeployed callback-approval design ending in a no-op decision record; it contains no revocation step. Updated the input and AWS design documentation.
+
+Validation after this follow-up: `.venv/bin/pytest tests/test_access_risk/test_loader.py tests/test_access_risk/test_reports_cli.py -q --tb=short` — **10 passed**; `.venv/bin/pytest tests/ -q --tb=short` — **510 passed**, 60 warnings (baseline 475 passed); Ruff check and `git diff --check` passed; JSON syntax validation passed for the ASL artifact. A demo snapshot exported to CSV and run through `vyper-guard access-risk <directory> --format json --as-of 2026-10-23T00:00:00Z` produced 21 findings, matching the JSON input's result. Evaluation remains 15 TP / 0 FP / 0 FN on both synthetic sets, with the caveats recorded above.

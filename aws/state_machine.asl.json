@@ -1,0 +1,33 @@
+{
+  "Comment": "Design artifact only. Approval callback is supplied by an operator-owned integration; this workflow never revokes access.",
+  "StartAt": "Plan generated",
+  "States": {
+    "Plan generated": {
+      "Type": "Pass",
+      "Next": "Wait for human approval"
+    },
+    "Wait for human approval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "REPLACE_WITH_APPROVAL_CALLBACK_LAMBDA_ARN",
+        "Payload": {
+          "taskToken.$": "$$.Task.Token",
+          "plan.$": "$.remediation_plan"
+        }
+      },
+      "TimeoutSeconds": 604800,
+      "ResultPath": "$.approval",
+      "Next": "Plan approved"
+    },
+    "Plan approved": {
+      "Type": "Pass",
+      "Parameters": {
+        "decisionRecorded": true,
+        "approval.$": "$.approval",
+        "plan.$": "$.remediation_plan"
+      },
+      "End": true
+    }
+  }
+}
