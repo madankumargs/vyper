@@ -1,0 +1,186 @@
+{
+  "detectors": [
+    {
+      "name": "missing_nonreentrant",
+      "category": "reentrancy",
+      "severity": "CRITICAL",
+      "enabled_by_default": true,
+      "description": "Flags @external functions that perform external calls or value transfers without @nonreentrant."
+    },
+    {
+      "name": "unsafe_raw_call",
+      "category": "external_call",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags raw_call() invocations whose success is not asserted or checked."
+    },
+    {
+      "name": "unchecked_send",
+      "category": "external_call",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags send() calls whose return value is not checked."
+    },
+    {
+      "name": "missing_event_emission",
+      "category": "code_quality",
+      "severity": "LOW",
+      "enabled_by_default": true,
+      "description": "Flags @external functions that modify state without emitting an event."
+    },
+    {
+      "name": "timestamp_dependence",
+      "category": "timestamp_dependence",
+      "severity": "LOW",
+      "enabled_by_default": true,
+      "description": "Flags use of block.timestamp in conditional logic."
+    },
+    {
+      "name": "integer_overflow",
+      "category": "arithmetic",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags explicit unsafe arithmetic calls (unsafe_add/sub/mul/div) that bypass Vyper built-in overflow protection."
+    },
+    {
+      "name": "unprotected_selfdestruct",
+      "category": "self_destruct",
+      "severity": "CRITICAL",
+      "enabled_by_default": true,
+      "description": "Flags selfdestruct() calls without access-control checks."
+    },
+    {
+      "name": "dangerous_delegatecall",
+      "category": "delegate_call",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags raw_call() with is_delegate_call=True."
+    },
+    {
+      "name": "unprotected_state_change",
+      "category": "access_control",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags writes to sensitive state variables (owner, admin, ...) without msg.sender checks."
+    },
+    {
+      "name": "send_in_loop",
+      "category": "denial_of_service",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags send()/raw_call() inside unbounded loops (DoS risk)."
+    },
+    {
+      "name": "unchecked_subtraction",
+      "category": "input_validation",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags self.x -= y without a preceding sufficient-balance/assertion guard."
+    },
+    {
+      "name": "cei_violation",
+      "category": "reentrancy",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags external calls that occur before state updates (Checks-Effects-Interactions violation)."
+    },
+    {
+      "name": "compiler_version_check",
+      "category": "compiler_bug",
+      "severity": "HIGH/INFO",
+      "enabled_by_default": true,
+      "description": "Always-on pragma/version vulnerability checks for known Vyper compiler advisories."
+    },
+    {
+      "name": "tx_origin_auth",
+      "category": "access_control",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Detects use of tx.origin for authentication; use msg.sender for access control."
+    },
+    {
+      "name": "missing_zero_address_check",
+      "category": "input_validation",
+      "severity": "MEDIUM",
+      "enabled_by_default": true,
+      "description": "Detects assignment to address state variables without a preceding non-zero address assertion."
+    },
+    {
+      "name": "weak_randomness",
+      "category": "code_quality",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Detects predictable block properties used as randomness sources."
+    },
+    {
+      "name": "locked_ether",
+      "category": "code_quality",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Detects payable contracts with no send/raw_call withdrawal mechanism."
+    },
+    {
+      "name": "shadowed_state_variable",
+      "category": "code_quality",
+      "severity": "MEDIUM",
+      "enabled_by_default": true,
+      "description": "Detects local variables that shadow contract-level state variables."
+    },
+    {
+      "name": "missing_input_validation",
+      "category": "input_validation",
+      "severity": "MEDIUM",
+      "enabled_by_default": true,
+      "description": "Detects external amount/value entry points without explicit assert-based input validation."
+    },
+    {
+      "name": "unsafe_assembly",
+      "category": "code_quality",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Detects inline assembly signals that bypass Vyper safety guarantees."
+    },
+    {
+      "name": "missing_return_value",
+      "category": "external_call",
+      "severity": "MEDIUM",
+      "enabled_by_default": true,
+      "description": "Detects external interface calls whose return value is discarded."
+    },
+    {
+      "name": "division_before_multiplication",
+      "category": "arithmetic",
+      "severity": "MEDIUM",
+      "enabled_by_default": true,
+      "description": "Detects precision-loss patterns where integer division happens before multiplication."
+    },
+    {
+      "name": "incorrect_erc20_return",
+      "category": "external_call",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Detects ERC-20 transfer/transferFrom calls whose boolean return value is not asserted."
+    },
+    {
+      "name": "oracle_price_manipulation",
+      "category": "oracle_manipulation",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags spot-price oracle reads (AMM reserves, instantaneous prices) in state-changing functions without a staleness or TWAP guard."
+    },
+    {
+      "name": "missing_slippage_protection",
+      "category": "front_running",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags swap/exchange calls without minimum-output or deadline protection (sandwich attack exposure)."
+    },
+    {
+      "name": "signature_replay",
+      "category": "access_control",
+      "severity": "HIGH",
+      "enabled_by_default": true,
+      "description": "Flags ecrecover signature verification lacking nonce, deadline, chain-id, or consumed-signature replay binding."
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Ruff check
+        run: uv run ruff check src/ tests/
+      - name: Ruff format check
+        run: uv run ruff format --check src/ tests/
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: uv sync --dev --python ${{ matrix.python-version }}
+      - name: Run tests with coverage
+        run: uv run --python ${{ matrix.python-version }} pytest tests/ -v --tb=short --cov=guardian --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Mypy
+        run: uv run mypy src/guardian/ --ignore-missing-imports
+        continue-on-error: true
+
+  security-sarif:
+    name: Security SARIF Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Collect Vyper contracts (excluding test fixtures)
+        id: vyper_contracts
+        run: |
+          set -e
+          rm -rf .vyper-guard-scan
+          mkdir -p .vyper-guard-scan
+          mapfile -t files < <(find . -name "*.vy" -not -path "./test_contracts/*")
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            cp --parents "$f" .vyper-guard-scan
+          done
+          echo "found=true" >> "$GITHUB_OUTPUT"
+      - name: Generate Vyper Guard SARIF report
+        if: steps.vyper_contracts.outputs.found == 'true'
+        run: |
+          uv run vyper-guard analyze .vyper-guard-scan --format sarif --output vyper-guard.sarif
+      - name: Upload SARIF to GitHub code scanning
+        if: steps.vyper_contracts.outputs.found == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: vyper-guard.sarif

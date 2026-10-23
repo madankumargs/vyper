@@ -1,0 +1,28 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "VYPER-2023-LARGE-ARRAY-STORAGE",
+      "title": "Storage underallocation for extremely large arrays",
+      "description": "Floating-point rounding could underallocate storage slots for arrays with extremely large byte sizes.",
+      "severity": "HIGH",
+      "affected_versions": "<=0.3.7",
+      "cve": "GHSA-6m97-7527-mh74",
+      "references": [
+        "https://github.com/vyperlang/vyper/security/advisories/GHSA-6m97-7527-mh74"
+      ],
+      "remediation": "Upgrade to Vyper >=0.3.8."
+    },
+    {
+      "id": "VYPER-2023-INTERNAL-DEFAULT-ORDER",
+      "title": "Incorrect ordering of internal function default arguments",
+      "description": "Calls to internal functions with multiple default arguments could supply omitted defaults in the wrong order.",
+      "severity": "HIGH",
+      "affected_versions": "<0.3.8",
+      "cve": "GHSA-ph9x-4vc9-m39g",
+      "references": [
+        "https://github.com/vyperlang/vyper/security/advisories/GHSA-ph9x-4vc9-m39g"
+      ],
+      "remediation": "Upgrade to Vyper >=0.3.8."
+    }
+  ]
+}

@@ -1,0 +1,1059 @@
+{
+  "$schema": "vyper-guard-public-benchmark/v1",
+  "generated_at": "2026-07-12T11:50:52+00:00",
+  "tool": {
+    "name": "vyper-guard",
+    "version": "0.6.0"
+  },
+  "method": {
+    "semantic_mode": "source",
+    "severity_threshold": "LOW",
+    "source_integrity": "sha256_verified",
+    "candidate_review_status": "complete_internal_review"
+  },
+  "engagement": {
+    "id": "curve-dao-trail-of-bits-2020",
+    "protocol": "Curve DAO",
+    "repository": "curvefi/curve-dao-contracts",
+    "audited_commit": "f1c8f4351a9d6a34a7e4227712dff8eecf74ae66",
+    "verified_fix_commit": "9ba007a5013dd46e66401bc552933407f0bee044",
+    "auditor": "Trail of Bits",
+    "engagement_end": "2020-07-10",
+    "audit_report": "https://docs.curve.fi/assets/pdf/curve-dao-ToB-final.pdf"
+  },
+  "summary": {
+    "audit_findings_total": 21,
+    "audit_findings_supported": 1,
+    "audit_findings_unsupported": 20,
+    "audit_findings_rediscovered": 1,
+    "supported_cases_total": 13,
+    "supported_cases_rediscovered": 9,
+    "supported_cases_missed": 4,
+    "supported_case_recall": 0.6923076923076923,
+    "audit_finding_coverage": 0.047619047619047616,
+    "scanner_findings_total": 37,
+    "unreviewed_candidates": 0,
+    "false_positives": 14,
+    "precision": 0.24324324324324326,
+    "confirmed_new_issues": 0,
+    "known_issues_rediscovered": 9,
+    "known_audit_related": 5,
+    "hardening_recommendations": 9,
+    "strict_finding_precision": 0.24324324324324326,
+    "actionable_observation_rate": 0.6216216216216216,
+    "false_positive_rate": 0.3783783783783784
+  },
+  "analysis_health": {
+    "detector_failures": {},
+    "trust_levels": {
+      "low": 6
+    }
+  },
+  "coverage": [
+    {
+      "finding_id": "TOB-CURVE-DAO-001",
+      "title": "LiquidityGauge does not account for VotingEscrow balance updates",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-002",
+      "title": "LiquidityGauge does not account for VotingEscrow totalSupply updates",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-003",
+      "title": "Early users have an unfair advantage",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-004",
+      "title": "GaugeController allows a quick vote and withdraw strategy",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-005",
+      "title": "Adding the same gauge multiple times corrupts weights",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-006",
+      "title": "Spam can prevent LiquidityGauge integral updates",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-007",
+      "title": "Minter can confiscate user tokens",
+      "severity": "HIGH",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-008",
+      "title": "Mint and burn events cannot be trusted",
+      "severity": "LOW",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-009",
+      "title": "VotingEscrow admin can hold whitelisted accounts hostage",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-010",
+      "title": "Large token name and symbol are truncated",
+      "severity": "LOW",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-011",
+      "title": "Critical operations lack a two-step procedure",
+      "severity": "HIGH",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-012",
+      "title": "Token decimals return value is not bounded",
+      "severity": "LOW",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-013",
+      "title": "Critical operations lack events",
+      "severity": "INFORMATIONAL",
+      "support": "supported",
+      "detector": "missing_event_emission"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-014",
+      "title": "Whitelist removal and withdrawal race condition",
+      "severity": "INFORMATIONAL",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-015",
+      "title": "Documentation gaps are error-prone",
+      "severity": "INFORMATIONAL",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-016",
+      "title": "Historical balance functions disagree in the current block",
+      "severity": "LOW",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-017",
+      "title": "Gauge voting has no early-vote incentive",
+      "severity": "MEDIUM",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-018",
+      "title": "Several loops can become unexecutable due to gas",
+      "severity": "HIGH",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-019",
+      "title": "Brownie tests can be unreliable",
+      "severity": "UNDETERMINED",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-020",
+      "title": "Aragon voting does not follow voting best practices",
+      "severity": "HIGH",
+      "support": "unsupported"
+    },
+    {
+      "finding_id": "TOB-CURVE-DAO-021",
+      "title": "Transaction ordering can reduce earned interest",
+      "severity": "INFORMATIONAL",
+      "support": "unsupported"
+    }
+  ],
+  "detectors": [
+    {
+      "detector": "missing_event_emission",
+      "maturity": "experimental",
+      "supported_cases": 13,
+      "rediscovered_cases": 9,
+      "missed_cases": 4,
+      "recall": 0.6923076923076923,
+      "scanner_findings": 16,
+      "unreviewed_candidates": 0,
+      "precision": 0.5625,
+      "promotion_status": "insufficient_reviewed_evidence",
+      "false_positives": 3,
+      "hardening_recommendations": 4,
+      "known_audit_related": 0,
+      "actionable_observation_rate": 0.8125
+    },
+    {
+      "detector": "missing_input_validation",
+      "maturity": "experimental",
+      "supported_cases": 0,
+      "rediscovered_cases": 0,
+      "missed_cases": 0,
+      "recall": null,
+      "scanner_findings": 3,
+      "unreviewed_candidates": 0,
+      "precision": 0.0,
+      "promotion_status": "insufficient_reviewed_evidence",
+      "false_positives": 3,
+      "hardening_recommendations": 0,
+      "known_audit_related": 0,
+      "actionable_observation_rate": 0.0
+    },
+    {
+      "detector": "missing_zero_address_check",
+      "maturity": "experimental",
+      "supported_cases": 0,
+      "rediscovered_cases": 0,
+      "missed_cases": 0,
+      "recall": null,
+      "scanner_findings": 10,
+      "unreviewed_candidates": 0,
+      "precision": 0.0,
+      "promotion_status": "insufficient_reviewed_evidence",
+      "false_positives": 1,
+      "hardening_recommendations": 4,
+      "known_audit_related": 5,
+      "actionable_observation_rate": 0.9
+    },
+    {
+      "detector": "tx_origin_auth",
+      "maturity": "supported",
+      "supported_cases": 0,
+      "rediscovered_cases": 0,
+      "missed_cases": 0,
+      "recall": null,
+      "scanner_findings": 1,
+      "unreviewed_candidates": 0,
+      "precision": 0.0,
+      "promotion_status": "insufficient_reviewed_evidence",
+      "false_positives": 0,
+      "hardening_recommendations": 1,
+      "known_audit_related": 0,
+      "actionable_observation_rate": 1.0
+    },
+    {
+      "detector": "unchecked_subtraction",
+      "maturity": "experimental",
+      "supported_cases": 0,
+      "rediscovered_cases": 0,
+      "missed_cases": 0,
+      "recall": null,
+      "scanner_findings": 7,
+      "unreviewed_candidates": 0,
+      "precision": 0.0,
+      "promotion_status": "insufficient_reviewed_evidence",
+      "false_positives": 7,
+      "hardening_recommendations": 0,
+      "known_audit_related": 0,
+      "actionable_observation_rate": 0.0
+    }
+  ],
+  "cases": [
+    {
+      "id": "TOB-CURVE-DAO-013-01",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "PoolProxy.vy",
+      "function": "set_admins",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "3d49a255fcd5eb579cfabe3a117992fd45dbed296eeda02fac22c262c6447256"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-02",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "PoolProxy.vy",
+      "function": "set_burner",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "ff0bf9d1a5a0a63c68a23e580ef3e638b376155f1b9f4b27fe965195f8b9e57b"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-03",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "ERC20CRV.vy",
+      "function": "update_mining_parameters",
+      "detector": "missing_event_emission",
+      "status": "missed",
+      "matches": []
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-04",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "ERC20CRV.vy",
+      "function": "set_minter",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "823483358c515aded5ae433fdbfe924ec1c91f3ba74bfd1eacd09e0dc92ef426"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-05",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "ERC20CRV.vy",
+      "function": "set_admin",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "6ed7fa96bd7b5c3668134819e2e0f166ded0fd493f2242e963170c2861939dae"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-06",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "GaugeController.vy",
+      "function": "transfer_ownership",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "bda4bbb098993f1716f0ef1ef0f506704d65546ee728ff198c71f34e07f60553"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-07",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "GaugeController.vy",
+      "function": "_change_type_weight",
+      "detector": "missing_event_emission",
+      "status": "missed",
+      "matches": []
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-08",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "GaugeController.vy",
+      "function": "_change_gauge_weight",
+      "detector": "missing_event_emission",
+      "status": "missed",
+      "matches": []
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-09",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "GaugeController.vy",
+      "function": "vote_for_gauge_weights",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "a8867f8cfa732e9b716c9711539684f64e0d0328d0410e5ed8ccdc0d1c4263fe"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-10",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "LiquidityGauge.vy",
+      "function": "_update_liquidity_limit",
+      "detector": "missing_event_emission",
+      "status": "missed",
+      "matches": []
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-11",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "VotingEscrow.vy",
+      "function": "transfer_ownership",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "bda4bbb098993f1716f0ef1ef0f506704d65546ee728ff198c71f34e07f60553"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-12",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "VotingEscrow.vy",
+      "function": "add_to_whitelist",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "57eb7b70ad2098d54a4d74f5fff748abac1e405a403a0e0aae798bfd0e4f6fcd"
+      ]
+    },
+    {
+      "id": "TOB-CURVE-DAO-013-13",
+      "finding_id": "TOB-CURVE-DAO-013",
+      "file": "VotingEscrow.vy",
+      "function": "remove_from_whitelist",
+      "detector": "missing_event_emission",
+      "status": "rediscovered",
+      "matches": [
+        "47658667b12a3a55f8975af29227416794b9c35dfaf1e3b80f60af932ec10c6e"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in set_minter()",
+      "function": "set_minter",
+      "line": 143,
+      "fingerprint": "823483358c515aded5ae433fdbfe924ec1c91f3ba74bfd1eacd09e0dc92ef426",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in set_admin()",
+      "function": "set_admin",
+      "line": 149,
+      "fingerprint": "6ed7fa96bd7b5c3668134819e2e0f166ded0fd493f2242e963170c2861939dae",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in set_name()",
+      "function": "set_name",
+      "line": 266,
+      "fingerprint": "9d5ade9076b005805c7afc0af2299b321a3e26ceb21f3893d572c7059942c617",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "missing-event-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "These privileged configuration changes mutate operationally important state without a dedicated event. This is useful monitoring hardening, but no direct exploit was established.",
+        "audit_reference": "Related to the monitoring rationale in TOB-CURVE-DAO-013, but these locations were not listed by Trail of Bits."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.balanceOf in transfer()",
+      "function": "transfer",
+      "line": 185,
+      "fingerprint": "2df818ae55cef07252c2ce43d70834af0f7e6e14dd5598d3e4f389d648b6afa5",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.balanceOf in transferFrom()",
+      "function": "transferFrom",
+      "line": 203,
+      "fingerprint": "95677368246844c47b83bd97f6f3c84eec6d2fc5d0b9b883c2d37dd1c9186ac6",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.allowances in transferFrom()",
+      "function": "transferFrom",
+      "line": 208,
+      "fingerprint": "9ff6718406718c70ff865af65249697c496e29c67353f754255e08dcf6adc783",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.balanceOf in burn()",
+      "function": "burn",
+      "line": 259,
+      "fingerprint": "823779264ebef40be0010b5986696d73da1881cca802250b6491322b6e9253fa",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.total_supply in burn()",
+      "function": "burn",
+      "line": 260,
+      "fingerprint": "ae108e8733e43b54ca9760ee91d6ed78a175fd6877533ba716689febfd6ffc9d",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.minter in set_minter()",
+      "function": "set_minter",
+      "line": 146,
+      "fingerprint": "03dee12757d2724b3bb04d877eca9a9ba7c2b2eaa8043835bc45c2acaef9c99a",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "zero-address-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Rejecting zero for these role or contract-address assignments prevents accidental disabling or unusable configuration. No unprivileged exploit path was established.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "ERC20CRV.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.admin in set_admin()",
+      "function": "set_admin",
+      "line": 152,
+      "fingerprint": "7732a00ed29bc97150da17bc7c3b2f2b110548ae65f85d18d17e6d9900cdc7a8",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "zero-address-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Rejecting zero for these role or contract-address assignments prevents accidental disabling or unusable configuration. No unprivileged exploit path was established.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in transfer_ownership()",
+      "function": "transfer_ownership",
+      "line": 79,
+      "fingerprint": "bda4bbb098993f1716f0ef1ef0f506704d65546ee728ff198c71f34e07f60553",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in period_write()",
+      "function": "period_write",
+      "line": 109,
+      "fingerprint": "8740e6d2cec2c36c4f25e6035df5d4cee3efdc4297728fb9df702df26f7fd462",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "missing-event-bookkeeping",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The GaugeController functions materialize checkpoint state rather than changing governance configuration. Minter.mint causes the token contract to emit the observable mint Transfer event.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in add_gauge()",
+      "function": "add_gauge",
+      "line": 120,
+      "fingerprint": "e6d872648ca7bf1b7f7184127d8204a9617722c6991f58d80e6aa92004f66b87",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "missing-event-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "These privileged configuration changes mutate operationally important state without a dedicated event. This is useful monitoring hardening, but no direct exploit was established.",
+        "audit_reference": "Related to the monitoring rationale in TOB-CURVE-DAO-013, but these locations were not listed by Trail of Bits."
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in gauge_relative_weight_write()",
+      "function": "gauge_relative_weight_write",
+      "line": 179,
+      "fingerprint": "b3dbd51d9d9cde63f6c5a5347daf250a2af232c6078e9970e0747bc23e8a64fc",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "missing-event-bookkeeping",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The GaugeController functions materialize checkpoint state rather than changing governance configuration. Minter.mint causes the token contract to emit the observable mint Transfer event.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in add_type()",
+      "function": "add_type",
+      "line": 255,
+      "fingerprint": "ded7e70b5cc1316ccc99aeedbdb92459df00e9bc38cd039621cf34caba938fcf",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "missing-event-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "These privileged configuration changes mutate operationally important state without a dedicated event. This is useful monitoring hardening, but no direct exploit was established.",
+        "audit_reference": "Related to the monitoring rationale in TOB-CURVE-DAO-013, but these locations were not listed by Trail of Bits."
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in vote_for_gauge_weights()",
+      "function": "vote_for_gauge_weights",
+      "line": 358,
+      "fingerprint": "a8867f8cfa732e9b716c9711539684f64e0d0328d0410e5ed8ccdc0d1c4263fe",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.vote_slope_changes in vote_for_gauge_weights()",
+      "function": "vote_for_gauge_weights",
+      "line": 408,
+      "fingerprint": "3f417b7c420eac23d33ada07994650926ce2f18e3b35814bd0c8e4c3ab6d53ab",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.admin in transfer_ownership()",
+      "function": "transfer_ownership",
+      "line": 82,
+      "fingerprint": "628f63a7f292db32c882a2b326838f80268c4122ccc06d2887386dc224750cd2",
+      "review_status": "known_audit_related",
+      "review": {
+        "group_id": "ownership-zero-address-audit-related",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "A zero administrator can make privileged control unrecoverable. The detector identifies a concrete failure mode, but not Trail of Bits' broader requirement for a two-step administrative transfer.",
+        "audit_reference": "TOB-CURVE-DAO-011"
+      }
+    },
+    {
+      "file": "GaugeController.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.gauges in add_gauge()",
+      "function": "add_gauge",
+      "line": 130,
+      "fingerprint": "b78a5a89cdd9effd25616c7683c6a846f1b58f6fa353a9af3351b3f4a0a58d6f",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "zero-address-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Rejecting zero for these role or contract-address assignments prevents accidental disabling or unusable configuration. No unprivileged exploit path was established.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "LiquidityGauge.vy",
+      "detector": "missing_input_validation",
+      "severity": "MEDIUM",
+      "confidence": "MEDIUM",
+      "title": "No input validation in deposit()",
+      "function": "deposit",
+      "line": 188,
+      "fingerprint": "22692df1d921513ca03512bf0a8638defd06e9d0d0d89fc121e953265e2e6c8a",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "intentional-zero-value-token-operations",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Zero-value deposit and withdrawal calls do not create value or bypass balance checks. Nonzero over-withdrawals revert through checked subtraction.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "LiquidityGauge.vy",
+      "detector": "missing_input_validation",
+      "severity": "MEDIUM",
+      "confidence": "MEDIUM",
+      "title": "No input validation in withdraw()",
+      "function": "withdraw",
+      "line": 205,
+      "fingerprint": "148fcb9775b069761df6cbd9ea289b64118c51fcce9a5882270eeaba8aed3e72",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "intentional-zero-value-token-operations",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Zero-value deposit and withdrawal calls do not create value or bypass balance checks. Nonzero over-withdrawals revert through checked subtraction.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "Minter.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in mint()",
+      "function": "mint",
+      "line": 25,
+      "fingerprint": "e63314d319b590114e070d73383e9ab613f4138c6cf33fcf51f003aca050940c",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "missing-event-bookkeeping",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The GaugeController functions materialize checkpoint state rather than changing governance configuration. Minter.mint causes the token contract to emit the observable mint Transfer event.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in set_admins()",
+      "function": "set_admins",
+      "line": 39,
+      "fingerprint": "3d49a255fcd5eb579cfabe3a117992fd45dbed296eeda02fac22c262c6447256",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in set_burner()",
+      "function": "set_burner",
+      "line": 48,
+      "fingerprint": "ff0bf9d1a5a0a63c68a23e580ef3e638b376155f1b9f4b27fe965195f8b9e57b",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.ownership_admin in set_admins()",
+      "function": "set_admins",
+      "line": 43,
+      "fingerprint": "42e5c3428bfd813e9a26468e36f7b2ddb0e09820015de8529ba3be44aa718d4f",
+      "review_status": "known_audit_related",
+      "review": {
+        "group_id": "ownership-zero-address-audit-related",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "A zero administrator can make privileged control unrecoverable. The detector identifies a concrete failure mode, but not Trail of Bits' broader requirement for a two-step administrative transfer.",
+        "audit_reference": "TOB-CURVE-DAO-011"
+      }
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.parameter_admin in set_admins()",
+      "function": "set_admins",
+      "line": 44,
+      "fingerprint": "1aece5598af562b2efa2626016074accfceb30d918d0b2c81469525d0afe66f5",
+      "review_status": "known_audit_related",
+      "review": {
+        "group_id": "ownership-zero-address-audit-related",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "A zero administrator can make privileged control unrecoverable. The detector identifies a concrete failure mode, but not Trail of Bits' broader requirement for a two-step administrative transfer.",
+        "audit_reference": "TOB-CURVE-DAO-011"
+      }
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.emergency_admin in set_admins()",
+      "function": "set_admins",
+      "line": 45,
+      "fingerprint": "a5e98bcd702c79a747180c043c1f15251e7ce28ce16bcaf5f7d8183c6bfc9f97",
+      "review_status": "known_audit_related",
+      "review": {
+        "group_id": "ownership-zero-address-audit-related",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "A zero administrator can make privileged control unrecoverable. The detector identifies a concrete failure mode, but not Trail of Bits' broader requirement for a two-step administrative transfer.",
+        "audit_reference": "TOB-CURVE-DAO-011"
+      }
+    },
+    {
+      "file": "PoolProxy.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.burners in set_burner()",
+      "function": "set_burner",
+      "line": 61,
+      "fingerprint": "de69f9818bf84ac94da6957933c27adb260422a9df1d15da98167eb0c319404d",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "zero-address-non-address-storage",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The flagged writes are allowance/weight mappings or deliberate zero-as-disable behavior, not unchecked assignment of a required address role.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in transfer_ownership()",
+      "function": "transfer_ownership",
+      "line": 84,
+      "fingerprint": "bda4bbb098993f1716f0ef1ef0f506704d65546ee728ff198c71f34e07f60553",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in add_to_whitelist()",
+      "function": "add_to_whitelist",
+      "line": 90,
+      "fingerprint": "57eb7b70ad2098d54a4d74f5fff748abac1e405a403a0e0aae798bfd0e4f6fcd",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in remove_from_whitelist()",
+      "function": "remove_from_whitelist",
+      "line": 96,
+      "fingerprint": "47658667b12a3a55f8975af29227416794b9c35dfaf1e3b80f60af932ec10c6e",
+      "review_status": "known_issue_rediscovered"
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_event_emission",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "No event emitted in changeController()",
+      "function": "changeController",
+      "line": 450,
+      "fingerprint": "cd03c1c08e8c586150021eceabaca24cab771fa3821bc54310bc7fc78813091d",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "missing-event-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "These privileged configuration changes mutate operationally important state without a dedicated event. This is useful monitoring hardening, but no direct exploit was established.",
+        "audit_reference": "Related to the monitoring rationale in TOB-CURVE-DAO-013, but these locations were not listed by Trail of Bits."
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "unchecked_subtraction",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "Unchecked subtraction of self.supply in withdraw()",
+      "function": "withdraw",
+      "line": 306,
+      "fingerprint": "d333f107f24df1e211383707907e87e945a3e27d002e61e35068384b49799119",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "checked-arithmetic",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "The audited Vyper arithmetic reverts on underflow. ERC20 balance and allowance reductions rely on checked arithmetic; scheduled signed slope changes are intentionally allowed to be negative.",
+        "audit_reference": "Trail of Bits report page 5 states that Vyper prevents overflow and underflow flaws."
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "tx_origin_auth",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "tx.origin restricts contract callers in assert_not_contract()",
+      "function": "assert_not_contract",
+      "line": 104,
+      "fingerprint": "ff6c246e3d95831664886897376d59b0696a90ffe748aef620d616734b24a32e",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "tx-origin-composability",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "assert_not_contract deliberately compares msg.sender and tx.origin to restrict contract callers. This is a real composability and account-abstraction limitation, but it is not an authentication bypass in this function.",
+        "audit_reference": "Related to VotingEscrow whitelist design discussed in TOB-CURVE-DAO-009 and TOB-CURVE-DAO-014."
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.admin in transfer_ownership()",
+      "function": "transfer_ownership",
+      "line": 87,
+      "fingerprint": "628f63a7f292db32c882a2b326838f80268c4122ccc06d2887386dc224750cd2",
+      "review_status": "known_audit_related",
+      "review": {
+        "group_id": "ownership-zero-address-audit-related",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "A zero administrator can make privileged control unrecoverable. The detector identifies a concrete failure mode, but not Trail of Bits' broader requirement for a two-step administrative transfer.",
+        "audit_reference": "TOB-CURVE-DAO-011"
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_zero_address_check",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Missing zero-address check for self.controller in changeController()",
+      "function": "changeController",
+      "line": 453,
+      "fingerprint": "908c01178afc4025b9dbbb95166d601bc14c31c579dc53824962cce410872c26",
+      "review_status": "hardening_recommendation",
+      "review": {
+        "group_id": "zero-address-hardening",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Rejecting zero for these role or contract-address assignments prevents accidental disabling or unusable configuration. No unprivileged exploit path was established.",
+        "audit_reference": null
+      }
+    },
+    {
+      "file": "VotingEscrow.vy",
+      "detector": "missing_input_validation",
+      "severity": "MEDIUM",
+      "confidence": "MEDIUM",
+      "title": "No input validation in deposit()",
+      "function": "deposit",
+      "line": 277,
+      "fingerprint": "22692df1d921513ca03512bf0a8638defd06e9d0d0d89fc121e953265e2e6c8a",
+      "review_status": "false_positive",
+      "review": {
+        "group_id": "intentional-zero-value-token-operations",
+        "reviewer": "Vyper Guard maintainer review",
+        "reviewed_at": "2026-07-12",
+        "independent": false,
+        "evidence": "Zero-value deposit and withdrawal calls do not create value or bypass balance checks. Nonzero over-withdrawals revert through checked subtraction.",
+        "audit_reference": null
+      }
+    }
+  ],
+  "review": {
+    "status": "complete_internal_review",
+    "reviewer": "Vyper Guard maintainer review",
+    "reviewed_at": "2026-07-12",
+    "independent": false,
+    "limitations": "Internal source review only. No fork reproduction or protocol-team confirmation was performed. Hardening recommendations are not vulnerabilities.",
+    "classifications": {
+      "false_positive": 14,
+      "hardening_recommendation": 9,
+      "known_audit_related": 5,
+      "known_issue_rediscovered": 9
+    }
+  },
+  "validated_scope": {
+    "detectors": [
+      "missing_event_emission"
+    ],
+    "scanner_findings": 16,
+    "known_issues_rediscovered": 9,
+    "hardening_recommendations": 4,
+    "false_positives": 3,
+    "recall": 0.6923076923076923,
+    "strict_finding_precision": 0.5625,
+    "actionable_observation_rate": 0.8125,
+    "review_independent": false
+  }
+}

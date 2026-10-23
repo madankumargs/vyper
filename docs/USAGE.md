@@ -1,0 +1,752 @@
+# Usage Guide
+
+Official links:
+
+- Website: https://vyper-web.vercel.app
+- DeepWiki: https://deepwiki.com/preethamak/vyper
+
+## Command Help
+
+```bash
+# Show organized command map
+vyper-guard help
+
+# Show command-specific flags/options
+vyper-guard analyze -h
+vyper-guard analyze-address -h
+vyper-guard stats -h
+```
+
+## Command Manual (What to Use, When)
+
+| Command | What it does | When to use it |
+|---|---|---|
+| `analyze <file|dir>` | Static security scan with full detector suite. | Default choice for local contracts before tests or audits. |
+| `verify <file|dir>` | Static analysis + unit/fuzz results in one report. | Best for CI or release gates where tests matter. |
+| `test <file|dir>` | Runs unit tests and emits verification report. | Use when you only want unit test status and timing. |
+| `fuzz <file|dir>` | Runs fuzz tests and emits verification report. | Use when you have fuzz harnesses or invariants. |
+| `analyze-address <addr>` | Pulls verified on-chain source and analyzes it. | Use for auditing deployed contracts. |
+| `explorer <addr>` | Fetches explorer metadata, ABI stats, and source. | Use to inspect a contract before running analysis. |
+| `diff <before> <after>` | Compares findings and security score between versions. | Use to confirm that fixes improved security posture. |
+| `stats <file|dir>` | Emits metrics, graphs, and structure summaries. | Use for engineering insights or documentation. |
+| `ast <file>` | Structural AST JSON export. | Use for tooling or deeper inspection. |
+| `flow <file>` | Call-flow/interaction export. | Use for understanding contract control flow. |
+| `detectors` | Lists all detectors with severity and category. | Use to learn what the analyzer covers. |
+| `fix <file>` | Guided remediation workflow. | Use to apply safe auto-fixes or review diffs. |
+| `baseline` / `monitor` | Baseline + monitor deployed contracts. | Use for production monitoring and regression alerts. |
+| `benchmark [dir]` | Detector benchmark run. | Use for detector quality checks in CI. |
+
+## Static Analysis
+
+### Basic Scan
+
+```bash
+# Scan a contract (Rich terminal output)
+vyper-guard analyze path/to/contract.vy
+
+# Absolute paths work too
+vyper-guard analyze /home/user/projects/my_vault.vy
+```
+
+### Semantic Mode (Source vs Compiler)
+
+Vyper Guard defaults to fast source-based semantic extraction. You can opt into
+compiler-backed semantics if the `vyper` extra is installed.
+
+```bash
+# Default source-based semantic mode
+vyper-guard analyze contract.vy --semantic-mode source
+
+# Compiler-backed semantic mode (requires vyper)
+vyper-guard analyze contract.vy --semantic-mode compiler
+```
+
+Compiler mode records `semantic_engine`, `semantic_compiler_version`, and
+`semantic_fallback_reason` in `analysis_context`. Vyper Guard first uses an
+importable Vyper package, then a pragma-compatible executable. Configure a
+version registry when a project contains contracts from several compiler eras:
+
+```bash
+export GUARDIAN_VYPER_BINARIES='{"0.3.10":"/opt/vyper-0.3.10/bin/vyper","0.4.3":"/opt/vyper-0.4.3/bin/vyper"}'
+```
+
+Each executable is validated with `--version`; the newest compatible compiler
+is selected. Vyper Guard never downloads a compiler implicitly. If none can
+satisfy the pragma, analysis falls back to source heuristics and reports the
+exact incompatibility.
+
+Config and env overrides:
+
+```yaml
+analysis:
+  semantic_mode: source  # or compiler
+```
+
+```bash
+export GUARDIAN_SEMANTIC_MODE=compiler
+```
+
+`analysis_context.analysis_trust` reports compiler coverage, detector maturity,
+runtime degradation, and limitations separately from findings. The numeric
+`security_score` is retained for compatibility but is explicitly identified as
+a `heuristic_risk_indicator`; it is not a deployment approval.
+
+Structured reports also include `analysis_context.triage_summary`. It groups repeated
+detector/function output, ranks a bounded candidate set, and records how many raw
+findings were omitted from the concise view. JSON, SARIF, and Markdown retain the full
+finding collection.
+
+Reviewed audit labels use `vyper-guard-labels/v2`. A label must include `file`,
+`detector`, `verdict`, `reviewer`, `reviewed_at`, and an evidence URL. Optional
+`finding_id` and `function` fields allow published findings to be reported as
+`known_issue_rediscovered`; unmatched output remains a `new_candidate`.
+
+Apply labels during normal analysis:
+
+```bash
+vyper-guard analyze contracts/ --audit-labels audit-labels.json --format json
+```
+
+Check whether supported detectors have enough independent evidence for promotion:
+
+```bash
+vyper-guard label-quality audit-labels.json \
+  --min-positive 25 --min-negative 25 --min-reviewers 2 --ci
+```
+
+The gate does not manufacture labels or treat scanner output as ground truth. A supported
+detector fails the gate until reviewed positive and negative examples satisfy all thresholds.
+
+Command note:
+
+- `audit` is a reserved command path and can be unavailable in this build.
+
+### Output Formats
+
+```bash
+# JSON output (pipe to jq, use in CI)
+vyper-guard analyze contract.vy --format json
+
+# Save JSON to file
+vyper-guard analyze contract.vy --format json --output report.json
+
+# Markdown report
+vyper-guard analyze contract.vy --format markdown --output report.md
+
+# SARIF report (for GitHub/GitLab/Azure code scanning)
+vyper-guard analyze contract.vy --format sarif --output report.sarif
+
+# Presentation-ready HTML report
+vyper-guard analyze contract.vy --format html --output report.html
+
+# If --format is omitted, the default comes from .guardianrc (reporting.default_format)
+```
+
+### Verification (Unit + Fuzz)
+
+Verification runs static analysis plus optional unit/fuzz suites and includes
+the results in CLI/JSON/Markdown/HTML/SARIF outputs.
+
+```bash
+# Static analysis + unit tests
+vyper-guard verify contracts/ --unit-cmd "pytest -q"
+
+# Static analysis + unit + fuzz (custom command)
+vyper-guard verify contracts/ --unit-cmd "pytest -q" --fuzz-cmd "pytest -q -m fuzz"
+
+# Unit tests only
+vyper-guard test . --unit-cmd "pytest -q"
+
+# Fuzz only
+vyper-guard fuzz . --fuzz-cmd "pytest -q -m fuzz"
+```
+
+Config (optional defaults):
+
+```yaml
+verification:
+  unit_command: ["pytest", "-q"]
+  fuzz_command: ["pytest", "-q", "-m", "fuzz"]
+  timeout_seconds: 600
+  max_output_chars: 20000
+```
+
+### Directory / Project Scan
+
+```bash
+# Recursively scan all *.vy files under the directory
+vyper-guard analyze contracts/
+
+# Machine-readable project report
+vyper-guard analyze contracts/ --format json --output contracts-report.json
+
+# Project SARIF report for code scanning
+vyper-guard analyze contracts/ --format sarif --output contracts.sarif
+
+# Project HTML report (summary + issue table)
+vyper-guard analyze contracts/ --format html --output contracts-report.html
+
+# Suppress known findings using a fingerprint baseline
+vyper-guard analyze contracts/ --format json --baseline-file .guardian-baseline.json
+
+# Show baseline diff metadata (new/resolved/unchanged)
+vyper-guard analyze contracts/ --format json \
+  --baseline-file .guardian-baseline.json --baseline-diff
+
+# Refresh baseline fingerprints from current scan results
+vyper-guard analyze contracts/ --format json \
+  --baseline-file .guardian-baseline.json --update-baseline
+
+# Include the project graph (imports, interfaces, call/state maps)
+vyper-guard analyze contracts/ --project-graph --format json
+```
+
+Notes:
+
+- Directory mode aggregates per-file analysis results; `--project-graph` adds cross-file findings.
+- `--fix` and `--fix-dry-run` are single-file only.
+- Priority triage metadata is currently applied in single-file mode.
+
+For reviewed risk acceptance, baseline v2 requires accountability and can
+expire automatically:
+
+```json
+{
+  "$schema": "vyper-guard-finding-baseline/v2",
+  "acceptances": [
+    {
+      "fingerprint": "finding-sha256",
+      "owner": "security@example.com",
+      "reason": "Reviewed protocol invariant makes this path unreachable.",
+      "expires_at": "2026-12-31T00:00:00Z"
+    }
+  ]
+}
+```
+
+Expired acceptances no longer suppress their finding. Version 1 fingerprint
+baselines remain supported for compatibility.
+
+Project graph config:
+
+```yaml
+analysis:
+  project_graph: true
+```
+
+Security notes:
+
+- Config auto-discovery trusts only the current working directory by default.
+- To allow parent-directory config discovery, set `GUARDIAN_TRUST_PARENT_CONFIG=true`.
+- Invalid environment overrides for constrained fields are ignored and safe defaults are kept.
+
+### Explainability Fields (JSON)
+
+JSON findings include explainability metadata when available:
+
+- `why_flagged`
+- `evidence`
+- `why_not_suppressed`
+- `semantic_context`
+- `exploit_verification` for supported high-value findings
+
+### Exploit Verification Metadata
+
+CEI/reentrancy findings include first-pass exploit verification metadata in CLI and JSON output.
+This is deterministic advisory evidence, not full exploit execution yet.
+
+The JSON field is attached per finding:
+
+```json
+{
+  "detector": "cei_violation",
+  "exploit_verification": {
+    "version": "exploit_verification_v1",
+    "vulnerability_class": "cei_reentrancy",
+    "status": "exploitable_path_candidate",
+    "function": "withdraw",
+    "patch": {
+      "strategy": "checks_effects_interactions"
+    },
+    "regression_test": {
+      "status": "skeleton"
+    }
+  }
+}
+```
+
+Current scope:
+
+- Supported: CEI/reentrancy proof-path metadata.
+- Not yet supported: deploying attacker contracts or executing generated tests automatically.
+
+### Priority Triage (Optional)
+
+Priority triage is an advisory post-processor. It does **not** change detector verdicts.
+The legacy `--ai-triage` flags remain available as aliases.
+
+```bash
+# Enable triage metadata in output
+vyper-guard analyze contract.vy --format json --priority-triage
+
+# Disable triage explicitly (overrides config)
+vyper-guard analyze contract.vy --no-priority-triage
+
+# Triage policy controls
+vyper-guard analyze contract.vy --format json --priority-triage \
+  --priority-triage-min-severity HIGH --priority-triage-max-items 10
+
+# LLM-backed triage mode (OpenAI-compatible endpoint)
+export GUARDIAN_LLM_API_KEY="<your_key>"
+vyper-guard analyze contract.vy --format json --priority-triage \
+  --priority-triage-mode llm --ai-llm-model gpt-5
+
+# Explicitly allow deterministic fallback when LLM triage is unavailable
+vyper-guard analyze contract.vy --format json --priority-triage \
+  --priority-triage-mode llm --allow-ai-fallback
+```
+
+JSON triage entries include deterministic scoring rationale fields:
+
+- `confidence`
+- `scoring_rationale.version`
+- `scoring_rationale.severity_base`
+- `scoring_rationale.evidence_bonus`
+- `scoring_rationale.final_confidence`
+
+When triage is enabled, JSON output also includes a top-level policy contract:
+
+- `ai_triage_policy.policy_version`
+- `ai_triage_policy.status`
+- `ai_triage_policy.deterministic`
+- `ai_triage_policy.can_override_verdict` (always `false`)
+- `ai_triage_policy.deprecation.announced`
+- `ai_triage_policy.deprecation.sunset_after`
+
+LLM mode notes:
+
+- LLM triage is advisory only and **cannot** override detector findings.
+- By default, LLM triage failures return a non-zero exit.
+- Use `--allow-ai-fallback` to explicitly allow deterministic fallback output.
+- LLM calls use an OpenAI-compatible `chat/completions` API.
+
+### AI Config Commands (Terminal-first)
+
+```bash
+# Configure AI provider/model without editing files
+vyper-guard ai config set provider openai
+vyper-guard ai config set model gpt-5.3-codex
+
+# Store API key (interactive hidden prompt)
+vyper-guard ai config set api-key
+
+# Or pass API key directly
+vyper-guard ai config set api-key <your_key>
+
+# Show effective AI config (API key redacted)
+vyper-guard ai config show
+```
+
+### Filtering
+
+```bash
+# Only HIGH and CRITICAL findings
+vyper-guard analyze contract.vy --severity-threshold HIGH
+
+# Run specific detectors only
+vyper-guard analyze contract.vy --detectors missing_nonreentrant,unsafe_raw_call
+
+# Lower-noise supported and beta profile
+vyper-guard analyze contract.vy --detectors recommended
+
+# Verbose debug output
+vyper-guard analyze contract.vy --verbose
+```
+
+Detector maturity is independent of severity. `supported` and `beta` describe
+validation evidence; `experimental` rules remain available through
+`--detectors all` but should be manually triaged before use as CI gates.
+
+### CI Mode
+
+```bash
+# Exit code 1 if any findings exist (for CI pipelines)
+vyper-guard analyze contract.vy --ci
+
+# CI mode with threshold
+vyper-guard analyze contract.vy --ci --severity-threshold HIGH
+
+# If --severity-threshold is omitted, the default comes from .guardianrc (analysis.severity_threshold)
+```
+
+### GitHub Code Scanning (SARIF)
+
+```yaml
+name: security-scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  vyper-guard-sarif:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv python install 3.12
+      - run: uv sync --dev
+      - run: uv run vyper-guard analyze test_contracts --format sarif --output vyper-guard.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: vyper-guard.sarif
+```
+
+## Auto-Remediation (`--fix`)
+
+The `--fix` flag generates and applies fixes for detected vulnerabilities:
+
+```bash
+vyper-guard analyze contract.vy --fix
+
+# Only auto-apply low/moderate-risk fixes (skip Tier C)
+vyper-guard analyze contract.vy --fix --max-auto-fix-tier B
+
+# Preview remediation without writing contract.fixed.vy
+vyper-guard analyze contract.vy --fix --fix-dry-run
+
+# Export remediation planning/execution report as JSON
+vyper-guard analyze contract.vy --fix-dry-run --fix-report remediation-report.json
+```
+
+Risk tiers:
+
+- `A` — low-risk mechanical edits (safest auto-apply)
+- `B` — moderate-risk edits (review recommended)
+- `C` — advisory/manual refactor prompts
+
+**What happens:**
+
+1. The contract is analyzed normally (findings displayed)
+2. For each finding, an auto-fix is generated (if possible)
+3. Each fix is shown with a unified diff preview
+4. You are prompted before writing `contract.fixed.vy` (default: No)
+5. If written, you are prompted before overwriting the original (default: No)
+6. On overwrite, a backup is always created first (`.bak`, then `.bak.N` if needed)
+
+If `--fix-dry-run` is used, steps 4-5 are skipped and no files are modified.
+
+Remediation reports include `validation.structural` and `validation.compiler`
+evidence. A structural or compiler failure blocks writes. When the Vyper
+compiler is unavailable, the report states `unavailable` and the result must be
+treated as unverified.
+
+If `--fix-report <path>` is used, Vyper Guard writes a deterministic remediation JSON artifact
+containing plan totals, eligible/skipped counts, generated fixes, and not-applied fixes.
+
+## Contract Stats + Graph Export
+
+Generate structural contract metrics in terminal:
+
+```bash
+vyper-guard stats contract.vy
+```
+
+Export graph artifacts for dashboards/CI attachments:
+
+```bash
+# Writes contract.stats.json + contract.stats.html beside the file
+vyper-guard stats contract.vy --graph
+
+# Custom artifact paths
+vyper-guard stats contract.vy \
+  --graph-json artifacts/contract-stats.json \
+  --graph-html artifacts/contract-stats.html
+```
+
+## Block Explorer Lookup
+
+Fetch verified metadata (source, ABI, functions) from explorer APIs:
+
+```bash
+# API credentials (recommended via environment)
+export GUARDIAN_EXPLORER_API_KEY="<explorer_key>"
+export GUARDIAN_LLM_API_KEY="<llm_key>"
+```
+
+```bash
+# Uses defaults from .guardianrc / env
+vyper-guard explorer 0xYourContractAddress
+
+# Auto fallback provider chain (default): etherscan -> blockscout -> sourcify
+vyper-guard explorer 0xYourContractAddress --provider auto
+
+# JSON output + save artifacts
+vyper-guard explorer 0xYourContractAddress --format json \
+  --save-json contract-meta.json \
+  --save-source contract.vy \
+  --save-abi contract.abi.json
+
+# Override provider/network/api key
+vyper-guard explorer 0xYourContractAddress \
+  --provider etherscan --network ethereum --api-key <explorer_key>
+
+# Explicit fallback order (comma-separated)
+vyper-guard explorer 0xYourContractAddress \
+  --provider etherscan,blockscout,sourcify --network ethereum
+```
+
+Analyze directly from explorer-verified source:
+
+```bash
+vyper-guard analyze-address 0xYourContractAddress --format json
+
+# Save fetched source and also emit report file
+vyper-guard analyze-address 0xYourContractAddress \
+  --save-source fetched.vy --format markdown --output report.md
+
+# If LLM triage is enabled, fallback is opt-in
+vyper-guard analyze-address 0xYourContractAddress \
+  --priority-triage --priority-triage-mode llm --allow-ai-fallback
+
+# Configure explorer defaults in ~/.guardianrc
+vyper-guard explorer config set provider auto
+vyper-guard explorer config set network sepolia
+vyper-guard explorer config set api-key
+vyper-guard explorer config show
+```
+
+## LLM Agent Mode (Memory + Sandbox)
+
+Run an LLM-backed security assistant with optional file/address context:
+
+```bash
+export GUARDIAN_LLM_API_KEY="<your_key>"
+
+# Ask with local contract context
+vyper-guard agent "What are the top 3 security risks and fixes?" --file contract.vy
+
+# Ask with explorer address context
+vyper-guard agent "Summarize ABI attack surface" --address 0xYourContractAddress
+
+# Fallback output is opt-in when explorer/LLM calls fail
+vyper-guard agent "Summarize ABI attack surface" \
+  --address 0xYourContractAddress --allow-fallback
+
+# Use persistent memory + optional sandbox helper script
+vyper-guard agent "Validate this patch plan" \
+  --file contract.vy \
+  --memory-file .guardian_agent_memory.jsonl \
+  --sandbox-script tools/check_patch.py \
+  --save-output agent-answer.md
+
+# Save assembled tool context for debugging/audit
+vyper-guard agent "Review this contract" \
+  --file contract.vy \
+  --save-context agent-context.json
+
+# Override explorer settings for address context
+vyper-guard agent "Summarize ABI attack surface" \
+  --address 0xYourContractAddress \
+  --explorer-provider etherscan \
+  --explorer-network sepolia \
+  --explorer-api-key <explorer_key>
+
+# Manage agent memory
+vyper-guard agent-memory stats --memory-file .guardian_agent_memory.jsonl
+vyper-guard agent-memory tail --memory-file .guardian_agent_memory.jsonl --limit 5
+vyper-guard agent-memory clear --memory-file .guardian_agent_memory.jsonl
+```
+
+Agent mode notes:
+
+- `agent` is strict by default: explorer/LLM failures return a non-zero exit.
+- Use `--allow-fallback` only when you explicitly want deterministic fallback output.
+
+**Example output:**
+
+```
+╭──────────────────────────────────────────────╮
+│ 🔧  Auto-Remediation  —  4 fix(es) generated │
+╰──────────────────────────────────────────────╯
+
+  Fix 1/4: Added @nonreentrant decorator to withdraw().
+    Severity: CRITICAL  |  Detector: missing_nonreentrant
+
+  --- a/vault.vy
+  +++ b/vault.vy
+  @@ -5,6 +5,7 @@
+  +@nonreentrant
+   @external
+   def withdraw(amount: uint256):
+
+  ✅  Patched contract written to: vault.fixed.vy
+  Overwrite original file (vault.vy)? [y/N]:
+```
+
+**Fix types:**
+
+| Detector | Fix Applied |
+|----------|-------------|
+| `missing_nonreentrant` | Inserts `@nonreentrant` decorator |
+| `unsafe_raw_call` | Wraps in `assert raw_call(...)` |
+| `missing_event_emission` | Adds `event` definition + `log` statement |
+| `unprotected_state_change` | Adds `assert msg.sender == self.owner` |
+| `unprotected_selfdestruct` | Adds access-control guard |
+| `unchecked_subtraction` | Adds `assert balance >= amount` guard |
+| `integer_overflow` | Replaces `unsafe_*` ops with safe operators or adds validation |
+| `compiler_version_check` | Upgrades pragma to `^0.4.0` |
+| `cei_violation` | Adds `FIXME` comment (manual reorder needed) |
+| `send_in_loop` | Adds `FIXME` comment (pull-pattern refactor needed) |
+| `timestamp_dependence` | Adds `NOTE` about miner manipulation |
+| `dangerous_delegatecall` | Adds access-control if missing |
+
+## Smart False-Positive Suppression (v0.2.0)
+
+Vyper Guard v0.2.0 includes context-aware analysis that suppresses false positives by recognizing well-known safe patterns found in production DeFi contracts:
+
+| Detector | Suppression Logic |
+|----------|-------------------|
+| `missing_nonreentrant` | Downgrades CRITICAL → MEDIUM when access control (`assert msg.sender == self.owner`) is present |
+| `unsafe_raw_call` | Skips the safeTransfer pattern (captured return + `convert(_response, bool)` check) |
+| `timestamp_dependence` | Skips timelocks — deadline/delay variables, large constants (≥3600s) |
+| `send_in_loop` | Skips small constant-bounded loops (`range(3)`, `N_COINS`, etc.) |
+| `integer_overflow` | Only flags `unsafe_add/sub/mul/div` — Vyper has built-in overflow protection |
+| `compiler_version_check` | Reviewed advisories are emitted only when both version range and affected language feature match |
+
+These suppression rules reduced false positives from **77% to 0%** when tested against the real **Curve StableSwap** mainnet contract (891 lines, target of the $70M July 2023 exploit).
+
+## List All Detectors
+
+```bash
+vyper-guard detectors
+```
+
+## Benchmark Detector Quality
+
+```bash
+# Benchmark default corpus directory (test_contracts)
+vyper-guard benchmark
+
+# Benchmark custom corpus and print JSON metrics
+vyper-guard benchmark ./contracts --format json
+
+# Benchmark using explicit labels (override filename heuristics)
+vyper-guard benchmark ./contracts --format json --labels-file labels.json
+
+# Quality gates (fails with exit code 1 when not met)
+vyper-guard benchmark ./contracts --format json --min-f1 0.70
+vyper-guard benchmark ./contracts --format json --min-precision 0.80 --min-recall 0.75
+vyper-guard benchmark ./contracts --format json --min-detector-f1 0.60 --min-detector-support 3
+```
+
+The benchmark output includes overall metrics and per-detector metrics
+(`tp`, `fp`, `fn`, `precision`, `recall`, `f1`, `support`).
+
+## Live Monitoring
+
+> Requires: `pip install -e ".[monitor]"` (web3 dependency)
+
+### Monitor a Deployed Contract
+
+```bash
+# Basic monitoring
+vyper-guard monitor 0xYourContractAddress --rpc https://mainnet.infura.io/v3/KEY
+
+# With Slack/Discord alerts
+vyper-guard monitor 0xAddr --rpc https://rpc.url --alert-webhook https://hooks.slack.com/...
+
+# With anomaly detection baseline
+vyper-guard monitor 0xAddr --rpc https://rpc.url --baseline baseline.json
+
+# Bound per-poll catch-up work and in-memory history
+vyper-guard monitor 0xAddr --rpc https://rpc.url \
+  --max-backfill-blocks 200 --max-history-records 20000
+```
+
+Webhook security defaults:
+
+- Only `https://` webhook URLs are accepted.
+- Local/private destinations (`localhost`, private IP ranges, `.local`, `.internal`) are blocked.
+
+### Build a Baseline Profile
+
+Record normal contract behavior to enable anomaly detection:
+
+```bash
+# Observe for 5 minutes, save baseline
+vyper-guard baseline 0xAddr --rpc https://rpc.url --duration 300 --output baseline.json
+```
+
+### Anomaly Detection Rules
+
+The monitor detects:
+
+- **Gas spikes** — usage significantly above normal (>3σ)
+- **Rapid balance drains** — large ETH outflows in short windows
+- **Failed transaction clusters** — repeated reverts (attack attempts)
+- **Unusual function calls** — selectors never seen during baseline
+- **Reentrancy indicators** — repeated calls to the same function within one block
+
+## Configuration File
+
+Create a `.guardianrc` (YAML) in your project root:
+
+```yaml
+analysis:
+  enabled_detectors:
+    - all
+  disabled_detectors:
+    - timestamp_dependence   # intentional in our contract
+  severity_threshold: LOW
+
+reporting:
+  default_format: cli
+  show_source_snippets: true
+  show_fix_suggestions: true
+
+performance:
+  max_file_size_mb: 10
+  cache_enabled: true
+
+ai_triage:
+  enabled: false
+  min_severity: LOW
+  max_items: 50
+  policy_status: stable
+  deprecation_announced: false
+  deprecation_sunset_after: null
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `GUARDIAN_DEFAULT_FORMAT` | Default output format (`cli`, `json`, `markdown`) |
+| `GUARDIAN_SEVERITY_THRESHOLD` | Default minimum severity |
+| `GUARDIAN_MAX_AUTO_FIX_TIER` | Default auto-remediation tier ceiling (`A`, `B`, `C`) |
+| `GUARDIAN_TRUST_PARENT_CONFIG` | Allow `.guardianrc` auto-discovery in parent directories (`true/false`) |
+| `GUARDIAN_AI_TRIAGE` | Enable priority triage by default (`true/false`) |
+| `GUARDIAN_AI_TRIAGE_MIN_SEVERITY` | Minimum triage severity (`INFO..CRITICAL`) |
+| `GUARDIAN_AI_TRIAGE_MAX_ITEMS` | Maximum triage rows |
+| `GUARDIAN_AI_TRIAGE_POLICY_STATUS` | Triage policy status (`stable/experimental/deprecated`) |
+| `GUARDIAN_AI_TRIAGE_DEPRECATION_ANNOUNCED` | Deprecation announcement flag (`true/false`) |
+| `GUARDIAN_AI_TRIAGE_DEPRECATION_SUNSET_AFTER` | Policy deprecation sunset date string |
+| `GUARDIAN_LLM_MEMORY_MAX_ENTRIES` | Cap persisted agent memory entries |
+| `GUARDIAN_UNIT_CMD` | Unit test command (string, parsed like a shell) |
+| `GUARDIAN_FUZZ_CMD` | Fuzz test command (string, parsed like a shell) |
+| `GUARDIAN_TEST_TIMEOUT` | Test timeout in seconds |
+| `GUARDIAN_TEST_OUTPUT_LIMIT` | Max captured output chars per stream |
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success (no findings, or findings below threshold) |
+| `1` | Findings found (in `--ci` mode) |
+| `2` | Error (file not found, invalid arguments, analysis failure) |

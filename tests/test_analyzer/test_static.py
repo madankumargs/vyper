@@ -1,0 +1,303 @@
+"""Tests for the Vyper source-level parser (ast_parser) and compiler_check."""
+
+from __future__ import annotations
+
+from guardian.analyzer.ast_parser import parse_vyper_source
+from guardian.analyzer.compiler_check import check_compiler_version
+
+# -------------------------------------------------------------------------
+# ast_parser tests
+# -------------------------------------------------------------------------
+
+
+class TestParseVyperSource:
+    """Tests for parse_vyper_source()."""
+
+    def test_extracts_pragma_version(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        assert contract.pragma_version is not None
+        assert "0.3.9" in contract.pragma_version
+
+    def test_extracts_functions(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        names = [f.name for f in contract.functions]
+        assert "withdraw" in names
+        assert "deposit" in names
+        assert "set_owner" in names
+        assert "get_balance" in names
+
+    def test_function_decorators(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        withdraw = next(f for f in contract.functions if f.name == "withdraw")
+        assert withdraw.is_external
+        assert not withdraw.is_nonreentrant
+
+        get_bal = next(f for f in contract.functions if f.name == "get_balance")
+        assert get_bal.is_external
+        assert get_bal.is_view
+
+    def test_legacy_visibility_decorators_are_normalized(self) -> None:
+        contract = parse_vyper_source(
+            """\
+@public
+def exposed():
+    pass
+
+@private
+def helper():
+    pass
+"""
+        )
+
+        exposed = next(f for f in contract.functions if f.name == "exposed")
+        helper = next(f for f in contract.functions if f.name == "helper")
+        assert exposed.is_external
+        assert helper.is_internal
+
+    def test_extracts_events(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        event_names = [e.name for e in contract.events]
+        assert "Deposit" in event_names
+
+    def test_extracts_state_variables(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        var_names = [v.name for v in contract.state_variables]
+        assert "owner" in var_names
+        assert "balances" in var_names
+
+    def test_public_variable_flag(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        owner_var = next(v for v in contract.state_variables if v.name == "owner")
+        assert owner_var.is_public
+
+    def test_safe_contract_parsed_correctly(self, safe_token_source: str) -> None:
+        contract = parse_vyper_source(safe_token_source)
+        assert contract.pragma_version is not None
+        assert "0.4.0" in contract.pragma_version
+        assert len(contract.functions) >= 4
+        assert len(contract.events) >= 2
+
+    def test_nonreentrant_detected(self, safe_token_source: str) -> None:
+        contract = parse_vyper_source(safe_token_source)
+        transfer = next(f for f in contract.functions if f.name == "transfer")
+        assert transfer.is_nonreentrant
+
+    def test_empty_source_returns_empty_contract(self) -> None:
+        # Minimal valid-ish source (just a comment)
+        contract = parse_vyper_source("# empty contract")
+        assert contract.functions == []
+        assert contract.events == []
+        assert contract.state_variables == []
+
+    def test_function_body_lines_populated(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        withdraw = next(f for f in contract.functions if f.name == "withdraw")
+        assert len(withdraw.body_lines) > 0
+        # Body should contain the send() call
+        body_text = withdraw.body_text
+        assert "send(" in body_text
+
+    def test_parses_long_multiline_function_signature(self) -> None:
+        source = """\
+# pragma version ^0.4.0
+
+@external
+def huge(
+    a1: uint256,
+    a2: uint256,
+    a3: uint256,
+    a4: uint256,
+    a5: uint256,
+    a6: uint256,
+    a7: uint256,
+    a8: uint256,
+    a9: uint256,
+    a10: uint256,
+    a11: uint256,
+    a12: uint256,
+    a13: uint256,
+    a14: uint256,
+    a15: uint256,
+    a16: uint256,
+) -> uint256:
+    return a1 + a16
+"""
+        contract = parse_vyper_source(source)
+        names = [f.name for f in contract.functions]
+        assert "huge" in names
+
+    def test_parses_default_arg_with_nested_parentheses(self) -> None:
+        source = """\
+# pragma version ^0.4.0
+
+@external
+def foo(x: uint256 = convert(0, uint256)) -> bool:
+    return x == 0
+"""
+        contract = parse_vyper_source(source)
+        names = [f.name for f in contract.functions]
+        assert "foo" in names
+
+    def test_skips_single_quote_docstring_block(self) -> None:
+        source = """\
+# pragma version ^0.4.0
+'''
+@notice This block should be ignored by parser
+owner: public(address)
+'''
+
+real_owner: public(address)
+"""
+        contract = parse_vyper_source(source)
+        var_names = [v.name for v in contract.state_variables]
+        assert "owner" not in var_names
+        assert "real_owner" in var_names
+
+
+# -------------------------------------------------------------------------
+# compiler_check tests
+# -------------------------------------------------------------------------
+
+
+class TestCompilerCheck:
+    """Tests for check_compiler_version()."""
+
+    def test_old_version_flags_vulnerabilities(self, vulnerable_vault_source: str) -> None:
+        contract = parse_vyper_source(vulnerable_vault_source)
+        results = check_compiler_version(contract)
+        # Old versions are not findings unless an advisory's affected feature is present.
+        assert results == []
+
+    def test_safe_version_no_findings(self, safe_token_source: str) -> None:
+        contract = parse_vyper_source(safe_token_source)
+        # safe_token targets ^0.4.0
+        results = check_compiler_version(contract)
+        # Should have zero findings (no known issues for 0.4.0)
+        assert len(results) == 0
+
+    def test_no_pragma_reports_info(self) -> None:
+        source = "owner: public(address)"
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        assert len(results) == 1
+        assert results[0].severity.value == "INFO"
+        assert "pragma" in results[0].title.lower()
+
+    def test_flags_known_ghsa_range_for_031(self) -> None:
+        source = "# pragma version 0.3.1\nlarge_array: address[2**64 + 1]"
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        advisories = "\n".join(r.title for r in results)
+        assert "GHSA-6m97-7527-mh74" in advisories
+
+    def test_flags_2023_reentrancy_advisory_for_vulnerable_version(self) -> None:
+        source = """\
+# pragma version 0.3.0
+token: address
+balances: public(HashMap[address, uint256])
+
+@external
+def withdraw(amount: uint256):
+    raw_call(msg.sender, b"", value=amount)
+    self.balances[msg.sender] -= amount
+"""
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        assert any("vyper-2023-07-reentrancy" in ev for r in results for ev in r.evidence)
+        assert any(r.severity.value == "CRITICAL" for r in results)
+
+    def test_suppresses_2023_reentrancy_advisory_without_external_calls(self) -> None:
+        source = """\
+# pragma version 0.3.0
+balances: public(HashMap[address, uint256])
+
+@external
+def deposit():
+    self.balances[msg.sender] += msg.value
+"""
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        assert not any("vyper-2023-07-reentrancy" in ev for r in results for ev in r.evidence)
+
+    def test_suppresses_2023_reentrancy_advisory_on_patched_version(self) -> None:
+        source = """\
+# pragma version ^0.3.1
+token: address
+
+@external
+def withdraw(amount: uint256):
+    raw_call(msg.sender, b"", value=amount)
+    self.balances[msg.sender] -= amount
+"""
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        assert not any("vyper-2023-07-reentrancy" in ev for r in results for ev in r.evidence)
+
+
+class TestPragmaFormats:
+    """Ensure all real-world Vyper pragma formats are detected."""
+
+    def test_standard_pragma(self) -> None:
+        source = "# pragma version ^0.4.0\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "^0.4.0"
+
+    def test_no_space_pragma(self) -> None:
+        source = "#pragma version ^0.4.0\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "^0.4.0"
+
+    def test_at_pragma_format(self) -> None:
+        """# @pragma version 0.4.1 — the format used by Vyper 0.4.x tooling."""
+        source = "# @pragma version 0.4.1\n# @license MIT\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "0.4.1"
+
+    def test_legacy_at_version_format(self) -> None:
+        """# @version ^0.3.9 — the older pre-0.4.0 format."""
+        source = "# @version ^0.3.9\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "^0.3.9"
+
+    def test_at_version_with_pin(self) -> None:
+        source = "# @version 0.3.10\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "0.3.10"
+
+    def test_at_pragma_without_version_keyword(self) -> None:
+        """# @pragma 0.4.0 — no 'version' keyword (real-world Vyper 0.4.x)."""
+        source = '# @pragma 0.4.0\n"""\n@license MIT\n"""\nowner: address'
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "0.4.0"
+
+    def test_at_pragma_without_version_caret(self) -> None:
+        """# @pragma ^0.4.0 — with caret but no 'version' keyword."""
+        source = "# @pragma ^0.4.0\nowner: address"
+        contract = parse_vyper_source(source)
+        assert contract.pragma_version == "^0.4.0"
+
+    def test_compiler_check_works_with_at_pragma(self) -> None:
+        """End-to-end: # @pragma version 0.4.1 should NOT trigger 'missing pragma'."""
+        source = "# @pragma version 0.4.1\nowner: address"
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        # No 'missing pragma' finding
+        titles = [r.title.lower() for r in results]
+        assert not any("missing" in t for t in titles)
+
+    def test_compiler_check_works_with_at_pragma_no_version_kw(self) -> None:
+        """End-to-end: # @pragma 0.4.0 should NOT trigger 'missing pragma'."""
+        source = "# @pragma 0.4.0\nowner: address"
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        titles = [r.title.lower() for r in results]
+        assert not any("missing" in t for t in titles)
+
+    def test_compiler_check_works_with_legacy_version(self) -> None:
+        """End-to-end: a legacy pragma alone is not evidence of an applicable advisory."""
+        source = "# @version ^0.3.9\nowner: address"
+        contract = parse_vyper_source(source)
+        results = check_compiler_version(contract)
+        assert results == []
+        titles = [r.title.lower() for r in results]
+        assert not any("missing" in t for t in titles)

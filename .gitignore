@@ -1,0 +1,76 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+
+# Guardian cache
+.guardian_cache/
+
+# Test / coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Qodo
+.qodo/
+
+# Node / VS Code Extension
+node_modules/
+vscode-extension/node_modules/
+vscode-extension/out/
+*.vsix
+
+# Logs
+*.log
+guardian.log
+artifacts/
+
+# Local user/runtime secrets
+.guardianrc
+.guardian_agent_memory.jsonl
+
+# Generated stats artifacts
+*.stats.html
+*.stats.json
+
+# Generated ad-hoc reports/scratch files
+test_contracts/report*.md
+tests/test_analyzer/# Plan:*.md
+
+# Local AI tooling workspace artifacts
+.codex
+.github/prompts/
